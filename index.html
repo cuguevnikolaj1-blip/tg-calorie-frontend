@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Калории</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Настраиваем цвета так, чтобы они брались из темы самого Телеграма */
+        body {
+            font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #preview {
+            max-width: 100%;
+            margin-top: 20px;
+            border-radius: 16px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <h2>🍔 Оценка блюда</h2>
+    <p>Сфотографируй еду, и нейросеть посчитает БЖУ.</p>
+
+    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+    
+    <button onclick="document.getElementById('photoInput').click()">📸 Выбрать фото</button>
+
+    <img id="preview" alt="Твое блюдо">
+
+    <button id="sendBtn" style="display: none;">✨ Проанализировать</button>
+
+    <script>
+        // Сообщаем Телеграму, что приложение готово к работе
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand(); // Разворачиваем сразу на весь экран
+
+        const photoInput = document.getElementById('photoInput');
+        const preview = document.getElementById('preview');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Логика: что происходит, когда фото выбрано
+        photoInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    sendBtn.style.display = 'block'; // Показываем кнопку отправки
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Заглушка для кнопки отправки на будущее
+        sendBtn.addEventListener('click', function() {
+            window.Telegram.WebApp.showAlert("Тут мы будем отправлять фото на наш сервер Python!");
+        });
+    </script>
+</body>
+</html>
