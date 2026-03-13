@@ -6,39 +6,169 @@
     <title>Food Tracker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Немного базового дизайна, чтобы текст был по центру и брал цвета из Telegram */
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-            /* Переменные Telegram подстроят фон и текст под тему пользователя */
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        h1 {
-            font-size: 24px;
+        h1, h2 { text-align: center; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #result-screen {
+            display: none; /* Скрыт по умолчанию */
+            text-align: center;
+            margin-top: 20px;
+        }
+        .macro-box {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        .macro {
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            width: 30%;
         }
     </style>
 </head>
 <body>
-    <h1 id="welcome-text">Загрузка...</h1>
+
+    <h1 id="welcome-text">Привет!</h1>
+
+    <div id="onboarding-screen">
+        <h2>Давай рассчитаем твою норму</h2>
+        
+        <div class="form-group">
+            <label>Пол</label>
+            <select id="gender">
+                <option value="male">Мужской</option>
+                <option value="female">Женский</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Возраст (лет)</label>
+            <input type="number" id="age" placeholder="Например: 25">
+        </div>
+
+        <div class="form-group">
+            <label>Рост (см)</label>
+            <input type="number" id="height" placeholder="Например: 180">
+        </div>
+
+        <div class="form-group">
+            <label>Вес (кг)</label>
+            <input type="number" id="weight" placeholder="Например: 75">
+        </div>
+
+        <div class="form-group">
+            <label>Активность</label>
+            <select id="activity">
+                <option value="1.2">Минимальная (сидячая работа)</option>
+                <option value="1.375">Слабая (1-3 тренировки в неделю)</option>
+                <option value="1.55">Средняя (3-5 тренировок)</option>
+                <option value="1.725">Высокая (каждый день)</option>
+            </select>
+        </div>
+
+        <button onclick="calculateKcal()">Рассчитать норму</button>
+    </div>
+
+    <div id="result-screen">
+        <h2>Твоя цель на день:</h2>
+        <h1 id="total-kcal">0 ккал</h1>
+        
+        <div class="macro-box">
+            <div class="macro">
+                <b>Белки</b><br><span id="protein">0</span> г
+            </div>
+            <div class="macro">
+                <b>Жиры</b><br><span id="fat">0</span> г
+            </div>
+            <div class="macro">
+                <b>Углеводы</b><br><span id="carbs">0</span> г
+            </div>
+        </div>
+        
+        <button onclick="goToMain()">Отлично, погнали!</button>
+    </div>
 
     <script>
-        // Сообщаем приложению, что мы готовы работать
         const tg = window.Telegram.WebApp;
-        
-        // Разворачиваем окно Mini App на максимум
         tg.expand(); 
 
-        // Достаем данные пользователя
         const user = tg.initDataUnsafe?.user;
-        
-        // Если данные нашлись (открыто в Telegram), пишем имя. Если открыто просто в браузере - пишем "гость"
         if (user && user.first_name) {
-            document.getElementById('welcome-text').innerText = `Добро пожаловать, ${user.first_name}!`;
-        } else {
-            document.getElementById('welcome-text').innerText = 'Добро пожаловать, гость!';
+            document.getElementById('welcome-text').innerText = `Привет, ${user.first_name}!`;
+        }
+
+        // Функция расчета калорий
+        function calculateKcal() {
+            const gender = document.getElementById('gender').value;
+            const age = parseInt(document.getElementById('age').value);
+            const height = parseInt(document.getElementById('height').value);
+            const weight = parseInt(document.getElementById('weight').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+
+            if (!age || !height || !weight) {
+                tg.showAlert("Пожалуйста, заполни все поля!");
+                return;
+            }
+
+            // Формула Миффлина - Сан-Жеора
+            let bmr;
+            if (gender === 'male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            }
+
+            const tdee = Math.round(bmr * activity); // Общий расход калорий
+
+            // Стандартное распределение БЖУ: Белки 30%, Жиры 30%, Углеводы 40%
+            const protein = Math.round((tdee * 0.3) / 4); // 1г белка = 4 ккал
+            const fat = Math.round((tdee * 0.3) / 9);     // 1г жира = 9 ккал
+            const carbs = Math.round((tdee * 0.4) / 4);   // 1г углеводов = 4 ккал
+
+            // Выводим результаты на экран
+            document.getElementById('total-kcal').innerText = tdee + " ккал";
+            document.getElementById('protein').innerText = protein;
+            document.getElementById('fat').innerText = fat;
+            document.getElementById('carbs').innerText = carbs;
+
+            // Прячем анкету, показываем результат
+            document.getElementById('onboarding-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+        }
+
+        function goToMain() {
+            tg.showAlert("Тут мы перейдем к кружочкам! (Шаг 3)");
         }
     </script>
 </body>
