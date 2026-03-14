@@ -10,7 +10,7 @@
         h1, h2 { text-align: center; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-size: 14px; }
-        input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        input[type="number"], select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
         button { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; margin-top: 10px; cursor: pointer; font-weight: bold; }
         .btn-secondary { background-color: #f0f0f0; color: #333; margin-top: 5px; }
         #onboarding-screen, #result-screen, #dashboard-screen, #sandbox-screen, #loading-screen { display: none; }
@@ -41,7 +41,7 @@
 <body>
 
     <div id="loading-screen">
-        <div class="loader-text">🔄 Синхронизация...</div>
+        <div class="loader-text" id="loader-message">🔄 Синхронизация...</div>
     </div>
 
     <div id="onboarding-screen">
@@ -69,7 +69,9 @@
             <div class="circle-wrap macro-circle" id="circle-fat"><div class="circle-inner"><span class="macro-value" id="fat-text">0/0</span><span class="macro-name">Жиры</span></div></div>
             <div class="circle-wrap macro-circle" id="circle-carbs"><div class="circle-inner"><span class="macro-value" id="carbs-text">0/0</span><span class="macro-name">Углеводы</span></div></div>
         </div>
-        <button class="add-food-btn" onclick="closeAndSendPhoto()">📸 Отправить фото в чат</button>
+        
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage(event)">
+        <button class="add-food-btn" onclick="triggerCamera()">📸 Сфотографировать еду</button>
     </div>
 
     <div id="sandbox-screen">
@@ -91,21 +93,18 @@
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         
-        // Вспомогательные переменные
         let tempMacros = {};
         window.userMacros = null;
         window.consumedToday = null;
 
-        // 1. ПАРСИМ ССЫЛКУ ОТ БОТА
-        const urlParams = new URLSearchParams(window.location.search);
-        const aiName = urlParams.get('name');
-        const aiCal = parseInt(urlParams.get('cal'));
-        const aiP = parseInt(urlParams.get('p'));
-        const aiF = parseInt(urlParams.get('f'));
-        const aiC = parseInt(urlParams.get('c'));
-        const aiAl = urlParams.get('al');
+        // Делаем переменные изменяемыми, чтобы перезаписывать их после ответа нейросети
+        let aiName = '';
+        let aiCal = 0;
+        let aiP = 0;
+        let aiF = 0;
+        let aiC = 0;
+        let aiAl = '';
 
-        // Вспомогательные функции для работы с Облаком Telegram
         function saveToCloud(key, value) {
             return new Promise((resolve) => tg.CloudStorage.setItem(key, value, (err, success) => resolve(success)));
         }
@@ -118,37 +117,28 @@
             return new Date().toLocaleDateString();
         }
 
-        // 2. СИНХРОНИЗАЦИЯ ПРИ ЗАПУСКЕ
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
-            // Вытягиваем данные из Облака
             const userMacrosStr = await getFromCloud('userMacros');
             let consumedTodayStr = await getFromCloud('consumedToday');
             let lastDateStr = await getFromCloud('lastDate');
             
             const today = getTodayDate();
 
-            // Если дата поменялась (наступил новый день) - обнуляем съеденное
             if (lastDateStr !== today && userMacrosStr) {
                 consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 });
                 await saveToCloud('consumedToday', consumedTodayStr);
                 await saveToCloud('lastDate', today);
             }
 
-            // Записываем в память окна
             window.userMacros = userMacrosStr ? JSON.parse(userMacrosStr) : null;
             window.consumedToday = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
 
             document.getElementById('loading-screen').style.display = 'none';
 
-            // Решаем, что показать
             if (window.userMacros) {
-                if (aiName && !isNaN(aiCal)) {
-                    renderSandbox();
-                } else {
-                    renderDashboard();
-                }
+                renderDashboard();
             } else {
                 document.getElementById('onboarding-screen').style.display = 'block';
             }
@@ -181,9 +171,7 @@
             await saveToCloud('consumedToday', JSON.stringify(window.consumedToday));
             await saveToCloud('lastDate', getTodayDate());
             
-            // Восстанавливаем оригинальный HTML
             document.getElementById('result-screen').innerHTML = '<h2 style="margin-top:50px;">Твоя цель на день:</h2><h1 id="total-kcal-result" style="font-size: 40px;">' + tempMacros.cal + ' ккал</h1><button onclick="saveAndGoToMain()">Отлично, погнали!</button>';
-            
             renderDashboard();
         }
 
@@ -212,6 +200,56 @@
             document.getElementById(elementId).style.background = `conic-gradient(${color} ${percentage}%, #e0e0e0 0)`;
         }
 
+        // ==========================================
+        // НОВАЯ ЛОГИКА КАМЕРЫ И ОТПРАВКИ ФОТО
+        // ==========================================
+        function triggerCamera() {
+            document.getElementById('camera-input').click();
+        }
+
+        async function uploadImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            hideAllScreens();
+            document.getElementById('loader-message').innerText = '⏳ Нейросеть изучает фото...';
+            document.getElementById('loading-screen').style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                // ОТПРАВЛЯЕМ ФОТО НА ТВОЙ СЕРВЕР NGROK
+                const response = await fetch('https://tova-unteeming-wanita.ngrok-free.dev/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Ошибка связи с сервером');
+
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+
+                // Сохраняем полученные данные
+                aiName = data.name;
+                aiCal = parseInt(data.cal);
+                aiP = parseInt(data.protein);
+                aiF = parseInt(data.fat);
+                aiC = parseInt(data.carbs);
+                aiAl = data.allergens || 'Нет';
+
+                renderSandbox();
+
+            } catch (err) {
+                tg.showAlert('Ой, не удалось распознать фото. Попробуй еще раз!');
+                renderDashboard();
+            } finally {
+                event.target.value = ''; // Сбрасываем инпут
+                document.getElementById('loader-message').innerText = '🔄 Синхронизация...';
+            }
+        }
+
         function renderSandbox() {
             hideAllScreens();
             document.getElementById('food-name').innerText = aiName;
@@ -237,17 +275,11 @@
             btn.innerText = "Записать в дневник";
             btn.disabled = false;
 
-            window.history.replaceState({}, document.title, window.location.pathname);
             renderDashboard();
         }
 
         function cancelFood() {
-            window.history.replaceState({}, document.title, window.location.pathname);
             renderDashboard();
-        }
-
-        function closeAndSendPhoto() {
-            tg.close();
         }
     </script>
 </body>
