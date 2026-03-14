@@ -14,20 +14,17 @@
         button { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; margin-top: 10px; cursor: pointer; font-weight: bold; }
         .btn-secondary { background-color: #f0f0f0; color: #333; margin-top: 5px; }
         
-        /* Скрываем все экраны по умолчанию */
         .screen { display: none; }
         .active-screen { display: block; }
-        
         #loading-screen, #sandbox-screen { display: none; }
         
-        /* Дашборд (Круги) */
+        /* Круги */
         .circle-wrap { position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         .circle-inner { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .main-circle { width: 200px; height: 200px; background: conic-gradient(#e0e0e0 100%, #e0e0e0 0); margin-bottom: 30px; }
         .main-circle .circle-inner { width: 175px; height: 175px; }
         .main-circle-title { font-size: 16px; color: gray; }
         .main-circle-value { font-size: 28px; font-weight: bold; margin: 5px 0; }
-        
         .macros-row { display: flex; justify-content: space-between; }
         .macro-circle { width: 90px; height: 90px; background: conic-gradient(#e0e0e0 100%, #e0e0e0 0); }
         .macro-circle .circle-inner { width: 75px; height: 75px; }
@@ -36,28 +33,31 @@
 
         /* Ввод еды */
         .input-row { display: flex; gap: 10px; margin-top: 30px; }
-        .input-row input { flex: 1; margin: 0; }
-        .input-row button { width: auto; margin: 0; padding: 0 20px; }
+        .input-row input { flex: 1; margin: 0; font-size: 14px; }
+        .input-row button { width: auto; margin: 0; padding: 0 15px; }
         .buttons-row { display: flex; gap: 10px; margin-top: 15px; }
         .buttons-row button { margin: 0; flex: 1; }
 
-        /* История */
+        /* История и Прогресс */
         .history-item { background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .history-emoji { font-size: 30px; margin-right: 15px; }
         .history-info { flex: 1; }
         .history-info h4 { margin: 0 0 5px 0; font-size: 16px; text-align: left; }
         .history-info p { margin: 0; font-size: 12px; color: gray; }
-        .delete-btn { background-color: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-left: 10px; flex-shrink: 0; padding: 0; }
+        .delete-btn { background-color: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-left: 10px; flex-shrink: 0; padding: 0; cursor: pointer; }
+        
+        .progress-card { flex-direction: column; align-items: flex-start; }
+        .progress-header { width: 100%; display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        details { width: 100%; background: transparent; padding: 0; margin: 0; outline: none; }
+        summary { font-size: 14px; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; font-weight: bold; outline: none; }
 
         /* Песочница */
         .food-card { background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
         .food-card h3 { margin-top: 0; text-align: center; }
         .food-macros { display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold; font-size: 14px;}
-        details { background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        summary { font-weight: bold; outline: none; }
         .loader-text { text-align: center; font-size: 18px; margin-top: 50px; font-weight: bold; }
 
-        /* НИЖНЕЕ МЕНЮ */
+        /* Навигация */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--tg-theme-bg-color, #f8f9fa); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
         .nav-item { text-align: center; color: gray; font-size: 12px; flex: 1; cursor: pointer; padding: 5px 0; }
         .nav-item.active { color: var(--tg-theme-button-color, #2481cc); font-weight: bold; }
@@ -78,8 +78,8 @@
         </div>
         
         <div class="input-row">
-            <input type="text" id="text-food-input" placeholder="Например: Капучино 300мл">
-            <button onclick="sendTextToAI()">Искать</button>
+            <input type="text" id="text-food-input" placeholder="Добавить текстом...">
+            <button onclick="sendTextToAI()">Записать ✍️</button>
         </div>
         <div class="buttons-row">
             <button style="background-color: #4caf50;" onclick="closeAndSendPhoto()">📸 Фото в чат</button>
@@ -90,16 +90,13 @@
 
     <div id="tab-diary" class="screen">
         <h2>Съедено сегодня</h2>
-        <div id="history-list">
-            </div>
+        <div id="history-list"></div>
     </div>
 
     <div id="tab-progress" class="screen">
         <h2>Мой прогресс</h2>
-        <div style="text-align: center; margin-top: 50px; color: gray;">
-            <span style="font-size: 50px;">📅</span>
-            <p>Здесь скоро появится календарь истории!</p>
-        </div>
+        <div id="progress-list" style="margin-top: 20px;">
+            </div>
     </div>
 
     <div id="tab-profile" class="screen">
@@ -119,10 +116,9 @@
             <h3 id="food-name">Загрузка...</h3>
             <h1 id="food-cal" style="text-align: center; margin: 10px 0; color: #2481cc;">0 ккал</h1>
             <div class="food-macros" id="food-macros-text"></div>
-            <details>
-                <summary>Аллергены</summary>
-                <p id="food-allergens" style="font-size: 14px; margin-top: 5px; color: #e53935;">Нет</p>
-            </details>
+            <div style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px;">
+                <strong>Аллергены:</strong> <span id="food-allergens" style="color: #e53935;">Нет</span>
+            </div>
         </div>
         <button id="save-food-btn" onclick="saveRealFood()">Записать в дневник</button>
         <button class="btn-secondary" onclick="cancelFood()">Отмена</button>
@@ -142,19 +138,15 @@
         window.userMacros = null;
         window.consumedToday = null;
         window.consumedItems = [];
+        window.historyLog = {}; // АРХИВ ПРОШЛЫХ ДНЕЙ
 
-        // Переменные для ИИ
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
         const urlParams = new URLSearchParams(window.location.search);
-        // Если перешли из чата (со старой логикой, пока без эмодзи)
         if(urlParams.get('name')) {
-            aiName = urlParams.get('name');
-            aiCal = parseInt(urlParams.get('cal')) || 0;
-            aiP = parseInt(urlParams.get('p')) || 0;
-            aiF = parseInt(urlParams.get('f')) || 0;
-            aiC = parseInt(urlParams.get('c')) || 0;
-            aiAl = urlParams.get('al') || 'Нет';
+            aiName = urlParams.get('name'); aiCal = parseInt(urlParams.get('cal')) || 0;
+            aiP = parseInt(urlParams.get('p')) || 0; aiF = parseInt(urlParams.get('f')) || 0;
+            aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || 'Нет';
             aiEmoji = urlParams.get('em') || '🍽';
         }
 
@@ -168,15 +160,30 @@
             const userMacrosStr = await getFromCloud('userMacros');
             let consumedTodayStr = await getFromCloud('consumedToday');
             let consumedItemsStr = await getFromCloud('consumedItems');
+            let historyLogStr = await getFromCloud('historyLog');
             let lastDateStr = await getFromCloud('lastDate');
             
             const today = getTodayDate();
+            window.historyLog = historyLogStr ? JSON.parse(historyLogStr) : {};
 
-            if (lastDateStr !== today && userMacrosStr) {
+            // МАГИЯ АРХИВАЦИИ: Если наступил новый день
+            if (lastDateStr && lastDateStr !== today && userMacrosStr) {
+                // 1. Сохраняем вчерашний день в архив
+                window.historyLog[lastDateStr] = {
+                    consumed: consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 },
+                    target: JSON.parse(userMacrosStr),
+                    items: consumedItemsStr ? JSON.parse(consumedItemsStr) : []
+                };
+                await saveToCloud('historyLog', JSON.stringify(window.historyLog));
+
+                // 2. Обнуляем счетчики для нового дня
                 consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 });
                 consumedItemsStr = JSON.stringify([]);
                 await saveToCloud('consumedToday', consumedTodayStr);
                 await saveToCloud('consumedItems', consumedItemsStr);
+                await saveToCloud('lastDate', today);
+            } else if (!lastDateStr) {
+                // Для самого первого запуска
                 await saveToCloud('lastDate', today);
             }
 
@@ -191,32 +198,27 @@
                 if (aiName && aiCal > 0) {
                     renderSandbox();
                 } else {
-                    switchTab('home');
-                    updateDashboard();
+                    switchTab('home'); updateDashboard();
                 }
             } else {
-                // Если нет данных, показываем только вкладку Профиля без меню
                 switchTab('profile');
             }
         };
 
-        // НАВИГАЦИЯ
         function switchTab(tabName) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
             document.getElementById('tab-' + tabName).classList.add('active-screen');
             
             if(document.getElementById('bottom-nav').style.display !== 'none') {
                 const navItems = document.querySelectorAll('.nav-item');
                 if(tabName === 'home') navItems[0].classList.add('active');
                 if(tabName === 'diary') { navItems[1].classList.add('active'); renderHistoryList(); }
-                if(tabName === 'progress') navItems[2].classList.add('active');
+                if(tabName === 'progress') { navItems[2].classList.add('active'); renderProgressList(); }
                 if(tabName === 'profile') navItems[3].classList.add('active');
             }
         }
 
-        // РАСЧЕТ И СОХРАНЕНИЕ ПРОФИЛЯ
         async function calculateAndSaveKcal() {
             const btn = document.querySelector('#tab-profile button');
             btn.innerText = "Сохраняем..."; btn.disabled = true;
@@ -234,7 +236,6 @@
             
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
             
-            // Если это первый запуск, создаем пустые счетчики
             if(!window.consumedToday) {
                 window.consumedToday = { cal: 0, protein: 0, fat: 0, carbs: 0 };
                 window.consumedItems = [];
@@ -245,7 +246,6 @@
             }
 
             btn.innerText = "Сохранить и пересчитать норму"; btn.disabled = false;
-            
             const msg = document.getElementById('profile-saved-msg');
             msg.style.display = 'block';
             setTimeout(() => { msg.style.display = 'none'; switchTab('home'); updateDashboard(); }, 1000);
@@ -257,7 +257,6 @@
 
             document.getElementById('cal-left').innerText = Math.max(0, target.cal - consumed.cal);
             document.getElementById('cal-target').innerText = target.cal;
-            
             document.getElementById('protein-text').innerText = `${Math.max(0, consumed.protein)}/${target.protein}`;
             document.getElementById('fat-text').innerText = `${Math.max(0, consumed.fat)}/${target.fat}`;
             document.getElementById('carbs-text').innerText = `${Math.max(0, consumed.carbs)}/${target.carbs}`;
@@ -273,7 +272,7 @@
             document.getElementById(elementId).style.background = `conic-gradient(${color} ${percentage}%, #e0e0e0 0)`;
         }
 
-        // ИСТОРИЯ
+        // --- ДНЕВНИК (Сегодня) ---
         function renderHistoryList() {
             const listContainer = document.getElementById('history-list');
             listContainer.innerHTML = ''; 
@@ -307,12 +306,55 @@
                 window.consumedItems.splice(index, 1);
                 await saveToCloud('consumedToday', JSON.stringify(window.consumedToday));
                 await saveToCloud('consumedItems', JSON.stringify(window.consumedItems));
-                renderHistoryList();
-                updateDashboard();
+                renderHistoryList(); updateDashboard();
             }
         }
 
-        // КАМЕРА И ТЕКСТОВЫЙ ВВОД (NGROK)
+        // --- ПРОГРЕСС (Архив дней) ---
+        function renderProgressList() {
+            const container = document.getElementById('progress-list');
+            container.innerHTML = '';
+            
+            // Получаем даты в обратном порядке (от свежих к старым)
+            const dates = Object.keys(window.historyLog).reverse();
+
+            if(dates.length === 0) {
+                container.innerHTML = '<div style="text-align: center; margin-top: 50px; color: gray;"><span style="font-size: 50px;">📅</span><p>История пока пуста.<br>Записывай еду, и завтра тут появятся первые результаты!</p></div>';
+                return;
+            }
+
+            dates.forEach(date => {
+                const dayData = window.historyLog[date];
+                const card = document.createElement('div');
+                card.className = 'history-item progress-card';
+                
+                // Проверяем, был ли перебор калорий (красный цвет) или недобор (зеленый)
+                const isOver = dayData.consumed.cal > dayData.target.cal;
+                const calColor = isOver ? '#ff4d4d' : '#4caf50';
+
+                // Генерируем список съеденного в этот день
+                let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:gray; margin-top:5px;">${i.em} ${i.name} — ${i.cal} ккал</div>`).join('');
+
+                card.innerHTML = `
+                    <div class="progress-header">
+                        <span>📅 ${date}</span>
+                        <span style="color: ${calColor};">${dayData.consumed.cal} / ${dayData.target.cal} ккал</span>
+                    </div>
+                    <details>
+                        <summary>Посмотреть детали</summary>
+                        <div style="margin-top: 10px; font-size: 13px; font-weight: bold;">
+                            Белки: ${dayData.consumed.protein}г | Жиры: ${dayData.consumed.fat}г | Угл: ${dayData.consumed.carbs}г
+                        </div>
+                        <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                            ${itemsHtml || '<span style="color:gray; font-size:13px;">Ничего не записано</span>'}
+                        </div>
+                    </details>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- СВЯЗЬ С СЕРВЕРОМ И NGROK ---
         function triggerCamera() { document.getElementById('camera-input').click(); }
 
         async function uploadImage(event) {
@@ -357,7 +399,7 @@
             document.getElementById('loading-screen').style.display = 'block';
         }
 
-        // ПЕСОЧНИЦА И ЗАПИСЬ
+        // --- ПЕСОЧНИЦА ---
         function renderSandbox() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('bottom-nav').style.display = 'none';
