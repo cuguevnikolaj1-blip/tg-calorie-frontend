@@ -379,7 +379,7 @@
                 const options = { method: 'POST', body: bodyData };
                 if(isJson) options.headers = { 'Content-Type': 'application/json' };
 
-                const response = await fetch('https://tova-unteeming-wanita.ngrok-free.dev' + endpoint, options);
+                const response = await fetch('https://64.188.61.46.nip.io' + endpoint, options);
                 if (!response.ok) throw new Error('Ошибка связи');
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
