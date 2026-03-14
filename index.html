@@ -13,7 +13,7 @@
         input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
         button { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; margin-top: 10px; cursor: pointer; font-weight: bold; }
         .btn-secondary { background-color: #f0f0f0; color: #333; margin-top: 5px; }
-        #onboarding-screen, #result-screen, #dashboard-screen, #sandbox-screen { display: none; }
+        #onboarding-screen, #result-screen, #dashboard-screen, #sandbox-screen, #loading-screen { display: none; }
         
         .dashboard-container { text-align: center; }
         .circle-wrap { position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
@@ -35,9 +35,14 @@
         .food-macros { display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold; font-size: 14px;}
         details { background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; }
         summary { font-weight: bold; cursor: pointer; outline: none; }
+        .loader-text { text-align: center; font-size: 18px; margin-top: 50px; font-weight: bold; }
     </style>
 </head>
 <body>
+
+    <div id="loading-screen">
+        <div class="loader-text">🔄 Синхронизация...</div>
+    </div>
 
     <div id="onboarding-screen">
         <h1 id="welcome-text">Привет!</h1>
@@ -78,14 +83,18 @@
                 <p id="food-allergens" style="font-size: 14px; margin-top: 5px; color: #e53935; font-weight: bold;">Нет</p>
             </details>
         </div>
-        <button onclick="saveRealFood()">Записать в дневник</button>
+        <button id="save-food-btn" onclick="saveRealFood()">Записать в дневник</button>
         <button class="btn-secondary" onclick="cancelFood()">Отмена</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); 
+        
+        // Вспомогательные переменные
         let tempMacros = {};
+        window.userMacros = null;
+        window.consumedToday = null;
 
         // 1. ПАРСИМ ССЫЛКУ ОТ БОТА
         const urlParams = new URLSearchParams(window.location.search);
@@ -96,14 +105,48 @@
         const aiC = parseInt(urlParams.get('c'));
         const aiAl = urlParams.get('al');
 
-        // 2. ПРОВЕРЯЕМ, ОТКУДА ПРИШЕЛ ПОЛЬЗОВАТЕЛЬ
-        window.onload = function() {
-            if (localStorage.getItem('userMacros')) {
-                // Если есть параметры в ссылке (пришли с кнопки "Проверить и записать")
+        // Вспомогательные функции для работы с Облаком Telegram
+        function saveToCloud(key, value) {
+            return new Promise((resolve) => tg.CloudStorage.setItem(key, value, (err, success) => resolve(success)));
+        }
+
+        function getFromCloud(key) {
+            return new Promise((resolve) => tg.CloudStorage.getItem(key, (err, value) => resolve(value)));
+        }
+
+        function getTodayDate() {
+            return new Date().toLocaleDateString();
+        }
+
+        // 2. СИНХРОНИЗАЦИЯ ПРИ ЗАПУСКЕ
+        window.onload = async function() {
+            document.getElementById('loading-screen').style.display = 'block';
+
+            // Вытягиваем данные из Облака
+            const userMacrosStr = await getFromCloud('userMacros');
+            let consumedTodayStr = await getFromCloud('consumedToday');
+            let lastDateStr = await getFromCloud('lastDate');
+            
+            const today = getTodayDate();
+
+            // Если дата поменялась (наступил новый день) - обнуляем съеденное
+            if (lastDateStr !== today && userMacrosStr) {
+                consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 });
+                await saveToCloud('consumedToday', consumedTodayStr);
+                await saveToCloud('lastDate', today);
+            }
+
+            // Записываем в память окна
+            window.userMacros = userMacrosStr ? JSON.parse(userMacrosStr) : null;
+            window.consumedToday = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+
+            document.getElementById('loading-screen').style.display = 'none';
+
+            // Решаем, что показать
+            if (window.userMacros) {
                 if (aiName && !isNaN(aiCal)) {
                     renderSandbox();
                 } else {
-                    // Просто открыли из меню
                     renderDashboard();
                 }
             } else {
@@ -128,9 +171,19 @@
             hideAllScreens(); document.getElementById('result-screen').style.display = 'block';
         }
 
-        function saveAndGoToMain() {
-            localStorage.setItem('userMacros', JSON.stringify(tempMacros));
-            localStorage.setItem('consumedToday', JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }));
+        async function saveAndGoToMain() {
+            document.getElementById('result-screen').innerHTML = '<h2 style="margin-top:50px;">Сохраняем в облако... ⏳</h2>';
+            
+            window.userMacros = tempMacros;
+            window.consumedToday = { cal: 0, protein: 0, fat: 0, carbs: 0 };
+
+            await saveToCloud('userMacros', JSON.stringify(window.userMacros));
+            await saveToCloud('consumedToday', JSON.stringify(window.consumedToday));
+            await saveToCloud('lastDate', getTodayDate());
+            
+            // Восстанавливаем оригинальный HTML
+            document.getElementById('result-screen').innerHTML = '<h2 style="margin-top:50px;">Твоя цель на день:</h2><h1 id="total-kcal-result" style="font-size: 40px;">' + tempMacros.cal + ' ккал</h1><button onclick="saveAndGoToMain()">Отлично, погнали!</button>';
+            
             renderDashboard();
         }
 
@@ -138,8 +191,8 @@
             hideAllScreens();
             document.getElementById('dashboard-screen').style.display = 'block';
 
-            const target = JSON.parse(localStorage.getItem('userMacros'));
-            const consumed = JSON.parse(localStorage.getItem('consumedToday')) || { cal: 0, protein: 0, fat: 0, carbs: 0 };
+            const target = window.userMacros;
+            const consumed = window.consumedToday;
 
             document.getElementById('cal-left').innerText = Math.max(0, target.cal - consumed.cal);
             document.getElementById('cal-target').innerText = target.cal;
@@ -159,7 +212,6 @@
             document.getElementById(elementId).style.background = `conic-gradient(${color} ${percentage}%, #e0e0e0 0)`;
         }
 
-        // Отрисовка песочницы с РЕАЛЬНЫМИ данными
         function renderSandbox() {
             hideAllScreens();
             document.getElementById('food-name').innerText = aiName;
@@ -169,12 +221,22 @@
             document.getElementById('sandbox-screen').style.display = 'block';
         }
 
-        function saveRealFood() {
-            let consumed = JSON.parse(localStorage.getItem('consumedToday'));
-            consumed.cal += aiCal; consumed.protein += aiP; consumed.fat += aiF; consumed.carbs += aiC;
-            localStorage.setItem('consumedToday', JSON.stringify(consumed));
+        async function saveRealFood() {
+            const btn = document.getElementById('save-food-btn');
+            btn.innerText = "Сохраняем...";
+            btn.disabled = true;
+
+            window.consumedToday.cal += aiCal; 
+            window.consumedToday.protein += aiP; 
+            window.consumedToday.fat += aiF; 
+            window.consumedToday.carbs += aiC;
             
-            // Очищаем ссылку, чтобы при перезагрузке еда не добавилась второй раз
+            await saveToCloud('consumedToday', JSON.stringify(window.consumedToday));
+            await saveToCloud('lastDate', getTodayDate());
+            
+            btn.innerText = "Записать в дневник";
+            btn.disabled = false;
+
             window.history.replaceState({}, document.title, window.location.pathname);
             renderDashboard();
         }
@@ -185,7 +247,7 @@
         }
 
         function closeAndSendPhoto() {
-            tg.close(); // Закрываем Mini App для удобной отправки фото
+            tg.close();
         }
     </script>
 </body>
