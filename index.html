@@ -6,45 +6,19 @@
     <title>Food Tracker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            margin: 0; padding: 20px; box-sizing: border-box;
-        }
+        body { font-family: Arial, sans-serif; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); margin: 0; padding: 20px; box-sizing: border-box; }
         h1, h2 { text-align: center; margin-bottom: 20px; }
-        
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-size: 14px; }
-        input, select, button {
-            width: 100%; padding: 12px; border-radius: 8px;
-            border: 1px solid #ccc; box-sizing: border-box; font-size: 16px;
-        }
-        button {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none; margin-top: 10px; cursor: pointer; font-weight: bold;
-        }
-        .btn-secondary {
-            background-color: #f0f0f0; color: #333; margin-top: 5px;
-        }
-
-        #onboarding-screen, #result-screen, #dashboard-screen, #sandbox-screen, #loading-screen { display: none; }
-
-        /* Дашборд и кружочки */
+        input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .btn-secondary { background-color: #f0f0f0; color: #333; margin-top: 5px; }
+        #onboarding-screen, #result-screen, #dashboard-screen, #sandbox-screen { display: none; }
+        
         .dashboard-container { text-align: center; }
-        .circle-wrap {
-            position: relative; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; margin: 0 auto;
-        }
-        .circle-inner {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 50%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-        .main-circle {
-            width: 200px; height: 200px; background: conic-gradient(#e0e0e0 100%, #e0e0e0 0); margin-bottom: 30px;
-        }
+        .circle-wrap { position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .circle-inner { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .main-circle { width: 200px; height: 200px; background: conic-gradient(#e0e0e0 100%, #e0e0e0 0); margin-bottom: 30px; }
         .main-circle .circle-inner { width: 175px; height: 175px; }
         .main-circle-title { font-size: 16px; color: gray; }
         .main-circle-value { font-size: 28px; font-weight: bold; margin: 5px 0; }
@@ -54,18 +28,13 @@
         .macro-circle .circle-inner { width: 75px; height: 75px; }
         .macro-name { font-size: 12px; color: gray; }
         .macro-value { font-size: 14px; font-weight: bold; }
-
         .add-food-btn { margin-top: 40px; font-size: 18px; padding: 15px; }
 
-        /* Стили песочницы (результат AI) */
-        .food-card {
-            background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px;
-        }
+        .food-card { background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
         .food-card h3 { margin-top: 0; text-align: center; }
-        .food-macros { display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold; }
+        .food-macros { display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold; font-size: 14px;}
         details { background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; }
         summary { font-weight: bold; cursor: pointer; outline: none; }
-        .loader { font-size: 24px; text-align: center; margin-top: 50px; }
     </style>
 </head>
 <body>
@@ -77,12 +46,7 @@
         <div class="form-group"><label>Возраст</label><input type="number" id="age" value="25"></div>
         <div class="form-group"><label>Рост</label><input type="number" id="height" value="180"></div>
         <div class="form-group"><label>Вес</label><input type="number" id="weight" value="75"></div>
-        <div class="form-group"><label>Активность</label>
-            <select id="activity">
-                <option value="1.2">Минимальная</option><option value="1.375">Слабая</option>
-                <option value="1.55" selected>Средняя</option><option value="1.725">Высокая</option>
-            </select>
-        </div>
+        <div class="form-group"><label>Активность</label><select id="activity"><option value="1.2">Минимальная</option><option value="1.375">Слабая</option><option value="1.55" selected>Средняя</option><option value="1.725">Высокая</option></select></div>
         <button onclick="calculateKcal()">Рассчитать норму</button>
     </div>
 
@@ -94,71 +58,60 @@
 
     <div id="dashboard-screen" class="dashboard-container">
         <h2>Сводка за день</h2>
-        <div class="circle-wrap main-circle" id="circle-cal">
-            <div class="circle-inner">
-                <span class="main-circle-title">Осталось</span>
-                <span class="main-circle-value" id="cal-left">0</span>
-                <span class="main-circle-title">из <span id="cal-target">0</span> ккал</span>
-            </div>
-        </div>
+        <div class="circle-wrap main-circle" id="circle-cal"><div class="circle-inner"><span class="main-circle-title">Осталось</span><span class="main-circle-value" id="cal-left">0</span><span class="main-circle-title">из <span id="cal-target">0</span> ккал</span></div></div>
         <div class="macros-row">
-            <div class="circle-wrap macro-circle" id="circle-protein"><div class="circle-inner"><span class="macro-value" id="protein-text">0 / 0</span><span class="macro-name">Белки</span></div></div>
-            <div class="circle-wrap macro-circle" id="circle-fat"><div class="circle-inner"><span class="macro-value" id="fat-text">0 / 0</span><span class="macro-name">Жиры</span></div></div>
-            <div class="circle-wrap macro-circle" id="circle-carbs"><div class="circle-inner"><span class="macro-value" id="carbs-text">0 / 0</span><span class="macro-name">Углеводы</span></div></div>
+            <div class="circle-wrap macro-circle" id="circle-protein"><div class="circle-inner"><span class="macro-value" id="protein-text">0/0</span><span class="macro-name">Белки</span></div></div>
+            <div class="circle-wrap macro-circle" id="circle-fat"><div class="circle-inner"><span class="macro-value" id="fat-text">0/0</span><span class="macro-name">Жиры</span></div></div>
+            <div class="circle-wrap macro-circle" id="circle-carbs"><div class="circle-inner"><span class="macro-value" id="carbs-text">0/0</span><span class="macro-name">Углеводы</span></div></div>
         </div>
-        <button class="add-food-btn" onclick="simulateAI()">📸 Добавить еду</button>
-    </div>
-
-    <div id="loading-screen" class="loader">
-        ⏳ AI анализирует фото...
+        <button class="add-food-btn" onclick="closeAndSendPhoto()">📸 Отправить фото в чат</button>
     </div>
 
     <div id="sandbox-screen">
         <h2>Распознано:</h2>
         <div class="food-card">
-            <h3 id="detected-food-name">Хачапури по-аджарски</h3>
-            <h1 style="text-align: center; margin: 10px 0; color: #2481cc;">820 ккал</h1>
-            <div class="food-macros">
-                <span>Белки: 35 г</span>
-                <span>Жиры: 40 г</span>
-                <span>Углеводы: 80 г</span>
-            </div>
-            
+            <h3 id="food-name">Загрузка...</h3>
+            <h1 id="food-cal" style="text-align: center; margin: 10px 0; color: #2481cc;">0 ккал</h1>
+            <div class="food-macros" id="food-macros-text"></div>
             <details>
-                <summary>Ингредиенты и аллергены</summary>
-                <ul style="font-size: 14px; padding-left: 20px;">
-                    <li>Тесто дрожжевое (глютен)</li>
-                    <li>Сыр сулугуни (лактоза)</li>
-                    <li>Сыр имеретинский (лактоза)</li>
-                    <li>Яйцо куриное (аллерген)</li>
-                    <li>Сливочное масло</li>
-                </ul>
+                <summary>Аллергены</summary>
+                <p id="food-allergens" style="font-size: 14px; margin-top: 5px; color: #e53935; font-weight: bold;">Нет</p>
             </details>
         </div>
-        <button onclick="saveFood()">Записать в дневник</button>
+        <button onclick="saveRealFood()">Записать в дневник</button>
         <button class="btn-secondary" onclick="cancelFood()">Отмена</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); 
-        
         let tempMacros = {};
 
-        // Временные данные от "нейросети" (для теста)
-        const mockAIFood = { cal: 820, protein: 35, fat: 40, carbs: 80 };
+        // 1. ПАРСИМ ССЫЛКУ ОТ БОТА
+        const urlParams = new URLSearchParams(window.location.search);
+        const aiName = urlParams.get('name');
+        const aiCal = parseInt(urlParams.get('cal'));
+        const aiP = parseInt(urlParams.get('p'));
+        const aiF = parseInt(urlParams.get('f'));
+        const aiC = parseInt(urlParams.get('c'));
+        const aiAl = urlParams.get('al');
 
+        // 2. ПРОВЕРЯЕМ, ОТКУДА ПРИШЕЛ ПОЛЬЗОВАТЕЛЬ
         window.onload = function() {
             if (localStorage.getItem('userMacros')) {
-                renderDashboard();
+                // Если есть параметры в ссылке (пришли с кнопки "Проверить и записать")
+                if (aiName && !isNaN(aiCal)) {
+                    renderSandbox();
+                } else {
+                    // Просто открыли из меню
+                    renderDashboard();
+                }
             } else {
                 document.getElementById('onboarding-screen').style.display = 'block';
             }
         };
 
-        function hideAllScreens() {
-            document.querySelectorAll('div[id$="-screen"]').forEach(el => el.style.display = 'none');
-        }
+        function hideAllScreens() { document.querySelectorAll('div[id$="-screen"]').forEach(el => el.style.display = 'none'); }
 
         function calculateKcal() {
             const age = parseInt(document.getElementById('age').value);
@@ -167,22 +120,12 @@
             const activity = parseFloat(document.getElementById('activity').value);
             const gender = document.getElementById('gender').value;
 
-            let bmr = gender === 'male' 
-                ? (10 * weight) + (6.25 * height) - (5 * age) + 5 
-                : (10 * weight) + (6.25 * height) - (5 * age) - 161;
-
+            let bmr = gender === 'male' ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
             const tdee = Math.round(bmr * activity);
             
-            tempMacros = {
-                cal: tdee,
-                protein: Math.round((tdee * 0.3) / 4),
-                fat: Math.round((tdee * 0.3) / 9),
-                carbs: Math.round((tdee * 0.4) / 4)
-            };
-
+            tempMacros = { cal: tdee, protein: Math.round((tdee * 0.3) / 4), fat: Math.round((tdee * 0.3) / 9), carbs: Math.round((tdee * 0.4) / 4) };
             document.getElementById('total-kcal-result').innerText = tdee + " ккал";
-            hideAllScreens();
-            document.getElementById('result-screen').style.display = 'block';
+            hideAllScreens(); document.getElementById('result-screen').style.display = 'block';
         }
 
         function saveAndGoToMain() {
@@ -201,9 +144,9 @@
             document.getElementById('cal-left').innerText = Math.max(0, target.cal - consumed.cal);
             document.getElementById('cal-target').innerText = target.cal;
             
-            document.getElementById('protein-text').innerText = `${consumed.protein} / ${target.protein}`;
-            document.getElementById('fat-text').innerText = `${consumed.fat} / ${target.fat}`;
-            document.getElementById('carbs-text').innerText = `${consumed.carbs} / ${target.carbs}`;
+            document.getElementById('protein-text').innerText = `${consumed.protein}/${target.protein}`;
+            document.getElementById('fat-text').innerText = `${consumed.fat}/${target.fat}`;
+            document.getElementById('carbs-text').innerText = `${consumed.carbs}/${target.carbs}`;
 
             updateCircle('circle-cal', consumed.cal, target.cal, '#2481cc');
             updateCircle('circle-protein', consumed.protein, target.protein, '#ff9800');
@@ -216,32 +159,33 @@
             document.getElementById(elementId).style.background = `conic-gradient(${color} ${percentage}%, #e0e0e0 0)`;
         }
 
-        function simulateAI() {
+        // Отрисовка песочницы с РЕАЛЬНЫМИ данными
+        function renderSandbox() {
             hideAllScreens();
-            document.getElementById('loading-screen').style.display = 'block';
-            
-            // Имитируем 2 секунды ожидания ответа от AI
-            setTimeout(() => {
-                hideAllScreens();
-                document.getElementById('sandbox-screen').style.display = 'block';
-            }, 2000);
+            document.getElementById('food-name').innerText = aiName;
+            document.getElementById('food-cal').innerText = aiCal + " ккал";
+            document.getElementById('food-macros-text').innerHTML = `<span>Б: ${aiP} г</span><span>Ж: ${aiF} г</span><span>У: ${aiC} г</span>`;
+            document.getElementById('food-allergens').innerText = aiAl;
+            document.getElementById('sandbox-screen').style.display = 'block';
         }
 
-        function saveFood() {
+        function saveRealFood() {
             let consumed = JSON.parse(localStorage.getItem('consumedToday'));
-            
-            // Прибавляем распознанную еду к текущим показателям
-            consumed.cal += mockAIFood.cal;
-            consumed.protein += mockAIFood.protein;
-            consumed.fat += mockAIFood.fat;
-            consumed.carbs += mockAIFood.carbs;
-            
+            consumed.cal += aiCal; consumed.protein += aiP; consumed.fat += aiF; consumed.carbs += aiC;
             localStorage.setItem('consumedToday', JSON.stringify(consumed));
-            renderDashboard(); // Возвращаемся на главный экран и перерисовываем круги
+            
+            // Очищаем ссылку, чтобы при перезагрузке еда не добавилась второй раз
+            window.history.replaceState({}, document.title, window.location.pathname);
+            renderDashboard();
         }
 
         function cancelFood() {
+            window.history.replaceState({}, document.title, window.location.pathname);
             renderDashboard();
+        }
+
+        function closeAndSendPhoto() {
+            tg.close(); // Закрываем Mini App для удобной отправки фото
         }
     </script>
 </body>
