@@ -31,6 +31,14 @@
         .macro-name { font-size: 12px; color: gray; }
         .macro-value { font-size: 14px; font-weight: bold; }
 
+        /* Вода */
+        .water-container { background: var(--tg-theme-secondary-bg-color, #f0f8ff); border-radius: 15px; padding: 15px; margin: 20px 0; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .water-container h3 { margin-top: 0; color: var(--tg-theme-button-color, #0088cc); font-size: 18px; margin-bottom: 15px; }
+        .glasses { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .glass { font-size: 26px; cursor: pointer; opacity: 0.3; filter: grayscale(100%); transition: all 0.2s ease-in-out; }
+        .glass.filled { opacity: 1; filter: grayscale(0%); transform: scale(1.15); }
+        #water-text { color: gray; font-size: 14px; margin: 0; font-weight: bold; }
+
         /* Ввод еды */
         .input-row { display: flex; gap: 10px; margin-top: 30px; }
         .input-row input { flex: 1; margin: 0; font-size: 14px; }
@@ -75,6 +83,21 @@
             <div class="circle-wrap macro-circle" id="circle-protein"><div class="circle-inner"><span class="macro-value" id="protein-text">0/0</span><span class="macro-name">Белки</span></div></div>
             <div class="circle-wrap macro-circle" id="circle-fat"><div class="circle-inner"><span class="macro-value" id="fat-text">0/0</span><span class="macro-name">Жиры</span></div></div>
             <div class="circle-wrap macro-circle" id="circle-carbs"><div class="circle-inner"><span class="macro-value" id="carbs-text">0/0</span><span class="macro-name">Углеводы</span></div></div>
+        </div>
+        
+        <div class="water-container">
+            <h3>💧 Вода (250 мл)</h3>
+            <div class="glasses" id="water-glasses">
+                <div class="glass" data-index="1">🥛</div>
+                <div class="glass" data-index="2">🥛</div>
+                <div class="glass" data-index="3">🥛</div>
+                <div class="glass" data-index="4">🥛</div>
+                <div class="glass" data-index="5">🥛</div>
+                <div class="glass" data-index="6">🥛</div>
+                <div class="glass" data-index="7">🥛</div>
+                <div class="glass" data-index="8">🥛</div>
+            </div>
+            <p id="water-text">Выпито: 0 / 8 стаканов (0.00 л)</p>
         </div>
         
         <div class="input-row">
@@ -203,6 +226,8 @@
             } else {
                 switchTab('profile');
             }
+            
+            loadWater(); // Загружаем воду при старте
         };
 
         function switchTab(tabName) {
@@ -315,7 +340,6 @@
             const container = document.getElementById('progress-list');
             container.innerHTML = '';
             
-            // Получаем даты в обратном порядке (от свежих к старым)
             const dates = Object.keys(window.historyLog).reverse();
 
             if(dates.length === 0) {
@@ -328,12 +352,11 @@
                 const card = document.createElement('div');
                 card.className = 'history-item progress-card';
                 
-                // Проверяем, был ли перебор калорий (красный цвет) или недобор (зеленый)
                 const isOver = dayData.consumed.cal > dayData.target.cal;
                 const calColor = isOver ? '#ff4d4d' : '#4caf50';
 
-                // Генерируем список съеденного в этот день
-                let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:gray; margin-top:5px;">${i.em} ${i.name} — ${i.cal} ккал</div>`).join('');
+                // ИСПРАВЛЕНА ОШИБКА UNDEFINED ЗДЕСЬ
+                let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:gray; margin-top:5px;">${i.em || '🍽'} ${i.name} — ${i.cal} ккал</div>`).join('');
 
                 card.innerHTML = `
                     <div class="progress-header">
@@ -354,7 +377,7 @@
             });
         }
 
-        // --- СВЯЗЬ С СЕРВЕРОМ И NGROK ---
+        // --- СВЯЗЬ С СЕРВЕРОМ ---
         function triggerCamera() { document.getElementById('camera-input').click(); }
 
         async function uploadImage(event) {
@@ -379,6 +402,7 @@
                 const options = { method: 'POST', body: bodyData };
                 if(isJson) options.headers = { 'Content-Type': 'application/json' };
 
+                // ИСПРАВЛЕНО: Теперь запросы идут на твой боевой сервер!
                 const response = await fetch('https://64.188.61.46.nip.io' + endpoint, options);
                 if (!response.ok) throw new Error('Ошибка связи');
                 const data = await response.json();
@@ -437,6 +461,51 @@
         }
 
         function closeAndSendPhoto() { tg.close(); }
+
+        // ==========================================
+        // ЛОГИКА ТРЕКЕРА ВОДЫ
+        // ==========================================
+        const waterGlasses = document.querySelectorAll('.glass');
+        const waterText = document.getElementById('water-text');
+
+        function loadWater() {
+            const today = getTodayDate();
+            let waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+            let waterCount = waterHistory[today] || 0;
+            updateWaterUI(waterCount);
+        }
+
+        function updateWaterUI(count) {
+            waterGlasses.forEach((glass, index) => {
+                if (index < count) {
+                    glass.classList.add('filled');
+                } else {
+                    glass.classList.remove('filled');
+                }
+            });
+            
+            let liters = (count * 0.25).toFixed(2);
+            waterText.innerText = `Выпито: ${count} / 8 стаканов (${liters} л)`;
+        }
+
+        waterGlasses.forEach(glass => {
+            glass.addEventListener('click', function() {
+                let clickedIndex = parseInt(this.getAttribute('data-index'));
+                const today = getTodayDate();
+                
+                let waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+                let currentWater = waterHistory[today] || 0;
+                
+                if (clickedIndex === currentWater) {
+                    waterHistory[today] = currentWater - 1;
+                } else {
+                    waterHistory[today] = clickedIndex;
+                }
+                
+                localStorage.setItem('water_history', JSON.stringify(waterHistory));
+                updateWaterUI(waterHistory[today]);
+            });
+        });
     </script>
 </body>
 </html>
