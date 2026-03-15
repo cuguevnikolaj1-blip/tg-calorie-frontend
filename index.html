@@ -46,7 +46,7 @@
         .buttons-row { display: flex; gap: 10px; margin-top: 15px; }
         .buttons-row button { margin: 0; flex: 1; }
 
-        /* История и Прогресс */
+        /* История */
         .history-item { background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .history-emoji { font-size: 30px; margin-right: 15px; }
         .history-info { flex: 1; }
@@ -54,10 +54,21 @@
         .history-info p { margin: 0; font-size: 12px; color: gray; }
         .delete-btn { background-color: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-left: 10px; flex-shrink: 0; padding: 0; cursor: pointer; }
         
-        .progress-card { flex-direction: column; align-items: flex-start; }
+        /* КАЛЕНДАРЬ И ПРОГРЕСС */
+        .calendar-wrap { background: var(--tg-theme-secondary-bg-color, #f9f9f9); border-radius: 15px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
+        .calendar-header button { width: 40px; height: 40px; margin: 0; padding: 0; background: rgba(0,0,0,0.05); color: var(--tg-theme-text-color, #333); border-radius: 50%; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .calendar-day-name { font-size: 12px; color: gray; margin-bottom: 5px; font-weight: bold; }
+        .calendar-day { padding: 10px 0; border-radius: 8px; cursor: pointer; font-size: 14px; background: transparent; transition: 0.2s; position: relative; }
+        .calendar-day.empty { cursor: default; }
+        .calendar-day.has-data { background: rgba(36, 129, 204, 0.15); color: var(--tg-theme-button-color, #2481cc); font-weight: bold; }
+        .calendar-day.selected { background: var(--tg-theme-button-color, #2481cc); color: #fff; font-weight: bold; }
+        
+        .progress-card { flex-direction: column; align-items: flex-start; background: var(--tg-theme-bg-color, #fff); border: 1px solid #ddd; }
         .progress-header { width: 100%; display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
         details { width: 100%; background: transparent; padding: 0; margin: 0; outline: none; }
-        summary { font-size: 14px; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; font-weight: bold; outline: none; }
+        summary { font-size: 14px; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; font-weight: bold; outline: none; margin-top: 10px; }
 
         /* Песочница */
         .food-card { background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
@@ -88,14 +99,8 @@
         <div class="water-container">
             <h3>💧 Вода (250 мл)</h3>
             <div class="glasses" id="water-glasses">
-                <div class="glass" data-index="1">🥛</div>
-                <div class="glass" data-index="2">🥛</div>
-                <div class="glass" data-index="3">🥛</div>
-                <div class="glass" data-index="4">🥛</div>
-                <div class="glass" data-index="5">🥛</div>
-                <div class="glass" data-index="6">🥛</div>
-                <div class="glass" data-index="7">🥛</div>
-                <div class="glass" data-index="8">🥛</div>
+                <div class="glass" data-index="1">🥛</div><div class="glass" data-index="2">🥛</div><div class="glass" data-index="3">🥛</div><div class="glass" data-index="4">🥛</div>
+                <div class="glass" data-index="5">🥛</div><div class="glass" data-index="6">🥛</div><div class="glass" data-index="7">🥛</div><div class="glass" data-index="8">🥛</div>
             </div>
             <p id="water-text">Выпито: 0 / 8 стаканов (0.00 л)</p>
         </div>
@@ -117,8 +122,17 @@
     </div>
 
     <div id="tab-progress" class="screen">
-        <h2>Мой прогресс</h2>
-        <div id="progress-list" style="margin-top: 20px;">
+        <h2>Календарь прогресса</h2>
+        <div class="calendar-wrap">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)">◀</button>
+                <span id="calendar-month-year">...</span>
+                <button onclick="changeMonth(1)">▶</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+        
+        <div id="selected-day-details" style="margin-top: 20px;">
             </div>
     </div>
 
@@ -150,7 +164,7 @@
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
         <div class="nav-item active" onclick="switchTab('home')"><span class="nav-icon">🏠</span>Главная</div>
         <div class="nav-item" onclick="switchTab('diary')"><span class="nav-icon">📋</span>Дневник</div>
-        <div class="nav-item" onclick="switchTab('progress')"><span class="nav-icon">📈</span>Прогресс</div>
+        <div class="nav-item" onclick="switchTab('progress')"><span class="nav-icon">📅</span>Прогресс</div>
         <div class="nav-item" onclick="switchTab('profile')"><span class="nav-icon">⚙️</span>Профиль</div>
     </div>
 
@@ -161,7 +175,7 @@
         window.userMacros = null;
         window.consumedToday = null;
         window.consumedItems = [];
-        window.historyLog = {}; // АРХИВ ПРОШЛЫХ ДНЕЙ
+        window.historyLog = {}; 
 
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
@@ -175,7 +189,10 @@
 
         function saveToCloud(key, value) { return new Promise((resolve) => tg.CloudStorage.setItem(key, value, () => resolve(true))); }
         function getFromCloud(key) { return new Promise((resolve) => tg.CloudStorage.getItem(key, (err, val) => resolve(val))); }
-        function getTodayDate() { return new Date().toLocaleDateString(); }
+        
+        // Умная функция даты для 100% совместимости
+        function getFormattedDate(dateObj) { return dateObj.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit', year: 'numeric'}); }
+        function getTodayDate() { return getFormattedDate(new Date()); }
 
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
@@ -189,9 +206,7 @@
             const today = getTodayDate();
             window.historyLog = historyLogStr ? JSON.parse(historyLogStr) : {};
 
-            // МАГИЯ АРХИВАЦИИ: Если наступил новый день
             if (lastDateStr && lastDateStr !== today && userMacrosStr) {
-                // 1. Сохраняем вчерашний день в архив
                 window.historyLog[lastDateStr] = {
                     consumed: consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 },
                     target: JSON.parse(userMacrosStr),
@@ -199,14 +214,12 @@
                 };
                 await saveToCloud('historyLog', JSON.stringify(window.historyLog));
 
-                // 2. Обнуляем счетчики для нового дня
                 consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 });
                 consumedItemsStr = JSON.stringify([]);
                 await saveToCloud('consumedToday', consumedTodayStr);
                 await saveToCloud('consumedItems', consumedItemsStr);
                 await saveToCloud('lastDate', today);
             } else if (!lastDateStr) {
-                // Для самого первого запуска
                 await saveToCloud('lastDate', today);
             }
 
@@ -218,16 +231,10 @@
 
             if (window.userMacros) {
                 document.getElementById('bottom-nav').style.display = 'flex';
-                if (aiName && aiCal > 0) {
-                    renderSandbox();
-                } else {
-                    switchTab('home'); updateDashboard();
-                }
-            } else {
-                switchTab('profile');
-            }
+                if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('home'); updateDashboard(); }
+            } else { switchTab('profile'); }
             
-            loadWater(); // Загружаем воду при старте
+            loadWater();
         };
 
         function switchTab(tabName) {
@@ -239,7 +246,7 @@
                 const navItems = document.querySelectorAll('.nav-item');
                 if(tabName === 'home') navItems[0].classList.add('active');
                 if(tabName === 'diary') { navItems[1].classList.add('active'); renderHistoryList(); }
-                if(tabName === 'progress') { navItems[2].classList.add('active'); renderProgressList(); }
+                if(tabName === 'progress') { navItems[2].classList.add('active'); renderCalendar(); renderSelectedDay(); }
                 if(tabName === 'profile') navItems[3].classList.add('active');
             }
         }
@@ -258,7 +265,6 @@
             const tdee = Math.round(bmr * activity);
             
             window.userMacros = { cal: tdee, protein: Math.round((tdee * 0.3) / 4), fat: Math.round((tdee * 0.3) / 9), carbs: Math.round((tdee * 0.4) / 4) };
-            
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
             
             if(!window.consumedToday) {
@@ -297,7 +303,6 @@
             document.getElementById(elementId).style.background = `conic-gradient(${color} ${percentage}%, #e0e0e0 0)`;
         }
 
-        // --- ДНЕВНИК (Сегодня) ---
         function renderHistoryList() {
             const listContainer = document.getElementById('history-list');
             listContainer.innerHTML = ''; 
@@ -315,7 +320,6 @@
                     <div class="history-info">
                         <h4>${item.name}</h4>
                         <p>🔥 ${item.cal} ккал (Б:${item.p} Ж:${item.f} У:${item.c})</p>
-                        ${item.al && item.al !== 'Нет' ? `<p style="color:#e53935; margin-top:3px;">⚠ ${item.al}</p>` : ''}
                     </div>
                     <button class="delete-btn" onclick="deleteFood(${item.id})">❌</button>
                 `;
@@ -335,36 +339,115 @@
             }
         }
 
-        // --- ПРОГРЕСС (Архив дней) ---
-        function renderProgressList() {
-            const container = document.getElementById('progress-list');
-            container.innerHTML = '';
-            
-            const dates = Object.keys(window.historyLog).reverse();
+        // ==========================================
+        // МАГИЯ КАЛЕНДАРЯ
+        // ==========================================
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedDateStr = getTodayDate(); // По умолчанию выбран сегодняшний день
 
-            if(dates.length === 0) {
-                container.innerHTML = '<div style="text-align: center; margin-top: 50px; color: gray;"><span style="font-size: 50px;">📅</span><p>История пока пуста.<br>Записывай еду, и завтра тут появятся первые результаты!</p></div>';
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthYearText = document.getElementById('calendar-month-year');
+            grid.innerHTML = '';
+            
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            monthYearText.innerText = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            days.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'calendar-day-name';
+                el.innerText = d;
+                grid.appendChild(el);
+            });
+
+            // Определяем с какого дня недели начинается месяц (0 = Воскресенье, делаем 0 = Понедельник)
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            let emptyDays = firstDay === 0 ? 6 : firstDay - 1;
+            
+            for(let i = 0; i < emptyDays; i++) {
+                const el = document.createElement('div');
+                el.className = 'calendar-day empty';
+                grid.appendChild(el);
+            }
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+
+            for(let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(currentYear, currentMonth, d);
+                const dateStr = getFormattedDate(dateObj);
+                
+                const el = document.createElement('div');
+                el.className = 'calendar-day';
+                el.innerText = d;
+
+                // Если есть данные по еде ИЛИ воде ИЛИ это сегодня — подсвечиваем
+                if(window.historyLog[dateStr] || waterHistory[dateStr] || dateStr === getTodayDate()) {
+                    el.classList.add('has-data');
+                }
+                
+                if(dateStr === selectedDateStr) el.classList.add('selected');
+
+                el.onclick = () => {
+                    selectedDateStr = dateStr;
+                    renderCalendar(); 
+                    renderSelectedDay();
+                };
+                grid.appendChild(el);
+            }
+        }
+
+        function changeMonth(dir) {
+            currentMonth += dir;
+            if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        }
+
+        function renderSelectedDay() {
+            const container = document.getElementById('selected-day-details');
+            const waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+            const waterCount = waterHistory[selectedDateStr] || 0;
+            const waterLiters = (waterCount * 0.25).toFixed(2);
+            
+            let dayData = window.historyLog[selectedDateStr];
+            let isToday = false;
+
+            // Если кликнули на Сегодня — берем текущие живые данные
+            if (selectedDateStr === getTodayDate()) {
+                isToday = true;
+                if (window.consumedToday && window.userMacros) {
+                    dayData = { consumed: window.consumedToday, target: window.userMacros, items: window.consumedItems };
+                }
+            }
+
+            if (!dayData && waterCount === 0) {
+                container.innerHTML = '<div style="text-align: center; color: gray; margin-top: 30px;">Нет данных за этот день</div>';
                 return;
             }
 
-            dates.forEach(date => {
-                const dayData = window.historyLog[date];
-                const card = document.createElement('div');
-                card.className = 'history-item progress-card';
-                
-                const isOver = dayData.consumed.cal > dayData.target.cal;
-                const calColor = isOver ? '#ff4d4d' : '#4caf50';
+            if (!dayData) { // Если пил воду, но не ел
+                 dayData = { consumed: {cal: 0, protein: 0, fat: 0, carbs: 0}, target: window.userMacros || {cal: 0}, items: [] };
+            }
 
-                // ИСПРАВЛЕНА ОШИБКА UNDEFINED ЗДЕСЬ
-                let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:gray; margin-top:5px;">${i.em || '🍽'} ${i.name} — ${i.cal} ккал</div>`).join('');
+            const isOver = dayData.consumed.cal > dayData.target.cal;
+            const calColor = isOver ? '#ff4d4d' : '#4caf50';
+            
+            let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:gray; margin-top:5px;">${i.em || '🍽'} ${i.name} — ${i.cal} ккал</div>`).join('');
 
-                card.innerHTML = `
+            container.innerHTML = `
+                <div class="history-item progress-card">
                     <div class="progress-header">
-                        <span>📅 ${date}</span>
+                        <span>📅 ${selectedDateStr} ${isToday ? '(Сегодня)' : ''}</span>
                         <span style="color: ${calColor};">${dayData.consumed.cal} / ${dayData.target.cal} ккал</span>
                     </div>
-                    <details>
-                        <summary>Посмотреть детали</summary>
+                    <div style="margin-top: 5px; font-size: 14px; font-weight: bold; color: #0088cc;">
+                        💧 Вода: ${waterCount} стак. (${waterLiters} л)
+                    </div>
+                    <details open>
+                        <summary>Детали питания</summary>
                         <div style="margin-top: 10px; font-size: 13px; font-weight: bold;">
                             Белки: ${dayData.consumed.protein}г | Жиры: ${dayData.consumed.fat}г | Угл: ${dayData.consumed.carbs}г
                         </div>
@@ -372,12 +455,13 @@
                             ${itemsHtml || '<span style="color:gray; font-size:13px;">Ничего не записано</span>'}
                         </div>
                     </details>
-                `;
-                container.appendChild(card);
-            });
+                </div>
+            `;
         }
 
-        // --- СВЯЗЬ С СЕРВЕРОМ ---
+        // ==========================================
+        // ОСТАЛЬНАЯ ЛОГИКА (АПИ, ФОТО, ВОДА)
+        // ==========================================
         function triggerCamera() { document.getElementById('camera-input').click(); }
 
         async function uploadImage(event) {
@@ -402,7 +486,6 @@
                 const options = { method: 'POST', body: bodyData };
                 if(isJson) options.headers = { 'Content-Type': 'application/json' };
 
-                // ИСПРАВЛЕНО: Теперь запросы идут на твой боевой сервер!
                 const response = await fetch('https://64.188.61.46.nip.io' + endpoint, options);
                 if (!response.ok) throw new Error('Ошибка связи');
                 const data = await response.json();
@@ -423,7 +506,6 @@
             document.getElementById('loading-screen').style.display = 'block';
         }
 
-        // --- ПЕСОЧНИЦА ---
         function renderSandbox() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('bottom-nav').style.display = 'none';
@@ -462,9 +544,6 @@
 
         function closeAndSendPhoto() { tg.close(); }
 
-        // ==========================================
-        // ЛОГИКА ТРЕКЕРА ВОДЫ
-        // ==========================================
         const waterGlasses = document.querySelectorAll('.glass');
         const waterText = document.getElementById('water-text');
 
@@ -477,13 +556,8 @@
 
         function updateWaterUI(count) {
             waterGlasses.forEach((glass, index) => {
-                if (index < count) {
-                    glass.classList.add('filled');
-                } else {
-                    glass.classList.remove('filled');
-                }
+                if (index < count) { glass.classList.add('filled'); } else { glass.classList.remove('filled'); }
             });
-            
             let liters = (count * 0.25).toFixed(2);
             waterText.innerText = `Выпито: ${count} / 8 стаканов (${liters} л)`;
         }
@@ -492,15 +566,11 @@
             glass.addEventListener('click', function() {
                 let clickedIndex = parseInt(this.getAttribute('data-index'));
                 const today = getTodayDate();
-                
                 let waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
                 let currentWater = waterHistory[today] || 0;
                 
-                if (clickedIndex === currentWater) {
-                    waterHistory[today] = currentWater - 1;
-                } else {
-                    waterHistory[today] = clickedIndex;
-                }
+                if (clickedIndex === currentWater) { waterHistory[today] = currentWater - 1; } 
+                else { waterHistory[today] = clickedIndex; }
                 
                 localStorage.setItem('water_history', JSON.stringify(waterHistory));
                 updateWaterUI(waterHistory[today]);
