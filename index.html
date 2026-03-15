@@ -143,6 +143,16 @@
         <div class="form-group"><label>Рост</label><input type="number" id="height" value="180"></div>
         <div class="form-group"><label>Вес</label><input type="number" id="weight" value="75"></div>
         <div class="form-group"><label>Активность</label><select id="activity"><option value="1.2">Минимальная</option><option value="1.375">Слабая</option><option value="1.55" selected>Средняя</option><option value="1.725">Высокая</option></select></div>
+        
+        <div class="form-group">
+            <label>Цель</label>
+            <select id="goal">
+                <option value="lose">Похудение (-20%)</option>
+                <option value="maintain" selected>Поддержание веса</option>
+                <option value="gain">Набор массы (+15%)</option>
+            </select>
+        </div>
+
         <button onclick="calculateAndSaveKcal()">Сохранить и пересчитать норму</button>
         <p id="profile-saved-msg" style="color: green; text-align: center; display: none; margin-top: 10px;">✅ Норма обновлена!</p>
     </div>
@@ -260,11 +270,24 @@
             const weight = parseInt(document.getElementById('weight').value);
             const activity = parseFloat(document.getElementById('activity').value);
             const gender = document.getElementById('gender').value;
+            const goal = document.getElementById('goal').value; // Считываем цель
 
+            // Считаем базовый обмен веществ (BMR)
             let bmr = gender === 'male' ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
-            const tdee = Math.round(bmr * activity);
             
+            // Считаем общую норму с учетом активности
+            let tdee = Math.round(bmr * activity);
+            
+            // КОРРЕКТИРОВКА ПОД ЦЕЛЬ
+            if (goal === 'lose') {
+                tdee = Math.round(tdee * 0.80); // Убираем 20%
+            } else if (goal === 'gain') {
+                tdee = Math.round(tdee * 1.15); // Добавляем 15%
+            }
+            
+            // Разбиваем на БЖУ (Белки: 30%, Жиры: 30%, Углеводы: 40%)
             window.userMacros = { cal: tdee, protein: Math.round((tdee * 0.3) / 4), fat: Math.round((tdee * 0.3) / 9), carbs: Math.round((tdee * 0.4) / 4) };
+            
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
             
             if(!window.consumedToday) {
@@ -542,7 +565,10 @@
             switchTab('home');
         }
 
-        function closeAndSendPhoto() { tg.close(); }
+        function closeAndSendPhoto() { 
+    tg.openTelegramLink('https://t.me/calories_miniapp_bot');
+    tg.close(); 
+}
 
         const waterGlasses = document.querySelectorAll('.glass');
         const waterText = document.getElementById('water-text');
