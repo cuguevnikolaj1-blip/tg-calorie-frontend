@@ -609,18 +609,24 @@
                 
                 updateWaterUI(window.waterHistory[today]);
 
-                // ИДЕАЛЬНЫЕ КРУГЛЫЕ КАПЛИ ВОДЫ
+                // ИДЕАЛЬНЫЕ КРУГЛЫЕ КАПЛИ ВОДЫ (В СТИЛЕ ЛАЙКА)
                 if (isAdding && typeof confetti === 'function') {
                     const rect = this.getBoundingClientRect();
                     const x = (rect.left + rect.width / 2) / window.innerWidth;
                     const y = (rect.top + rect.height / 2) / window.innerHeight;
                     confetti({
-                        particleCount: 20, spread: 50, startVelocity: 15, decay: 0.9, gravity: 1.2,
-                        colors: ['#007AFF', '#4DA8DA', '#8EC5FC', '#FFFFFF'],
-                        shapes: ['circle'], // Только круглые капли
-                        origin: { x, y }, zIndex: 2000, disableForReducedMotion: true, scalar: 0.4 // Маленький размер
+                        particleCount: 8,       // Мало капель
+                        spread: 360,            // Разлет ровно по кругу во все стороны
+                        startVelocity: 12,      // Небольшой радиус вылета
+                        decay: 0.85,            // Быстро останавливаются
+                        gravity: 0,             // НЕ падают вниз, а просто разлетаются
+                        ticks: 40,              // Быстро исчезают (короткая анимация)
+                        colors: ['#007AFF', '#8EC5FC'], // Только наши синие цвета
+                        shapes: ['circle'],     // Строго круглые
+                        origin: { x, y },
+                        zIndex: 2000,
+                        scalar: 0.5             // Чуть больше, чтобы было похоже на брызги
                     });
-                }
 
                 await saveToCloud('water_history', JSON.stringify(window.waterHistory));
                 if (document.getElementById('tab-calendar').classList.contains('active-screen')) { renderSelectedDay(); }
