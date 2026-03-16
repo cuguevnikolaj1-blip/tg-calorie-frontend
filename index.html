@@ -17,10 +17,10 @@
             --text-dark: #2C2C2E;
             --text-gray: #8E8E93;
             
-            --macro-cal: #007AFF;     /* Синий - Калории */
-            --macro-protein: #8A2BE2; /* Фиолетовый - Белки */
-            --macro-fat: #FF4500;     /* Оранжевый - Жиры */
-            --macro-carbs: #32CD32;   /* Зеленый - Углеводы */
+            --macro-cal: #007AFF;     
+            --macro-protein: #8A2BE2; 
+            --macro-fat: #FF4500;     
+            --macro-carbs: #32CD32;   
             --water-blue: #007AFF;
             
             --radius: 28px;
@@ -33,10 +33,7 @@
             background: var(--bg-gradient);
             background-attachment: fixed;
             color: var(--text-dark); 
-            margin: 0; 
-            padding: 60px 20px 110px 20px; 
-            box-sizing: border-box; 
-            min-height: 100vh;
+            margin: 0; padding: 60px 20px 110px 20px; box-sizing: border-box; min-height: 100vh;
         }
 
         h2 { text-align: left; font-size: 24px; font-weight: 700; margin-bottom: 20px; margin-top: 0; color: #1C1C1E; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
@@ -57,7 +54,6 @@
         
         button { border: none; padding: 16px; border-radius: 18px; width: 100%; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Poppins', sans-serif; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.97); }
-        
         .btn-primary { background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); color: #fff; box-shadow: 0 6px 15px rgba(142, 55, 215, 0.3); }
         .btn-green { background: linear-gradient(135deg, #34C759 0%, #28A745 100%); color: #fff; box-shadow: 0 6px 15px rgba(52, 199, 89, 0.3); }
         .btn-secondary { background: rgba(255,255,255,0.7); color: var(--text-dark); border: 1px solid rgba(0,0,0,0.05); }
@@ -67,42 +63,32 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         #loading-screen, #sandbox-screen { display: none; }
 
-        /* ГРАФИК: 1 КРУГ И 3 ОТРЕЗКА */
-        .big-donut-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto 25px auto; }
-        .big-donut-wrap svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05)); }
+        /* ИДЕАЛЬНЫЙ ДИЗАЙН: Большое кольцо калорий */
+        .cal-donut-wrap { position: relative; width: 180px; height: 180px; margin: 0 auto 25px auto; }
+        .cal-donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 6px 12px rgba(0,122,255,0.25)); }
+        .cal-donut-wrap circle { fill: none; stroke-linecap: round; stroke-width: 14; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        circle { fill: none; stroke-linecap: round; stroke-width: 12; transition: stroke-dasharray 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .circle-bg { stroke: rgba(0,0,0,0.06); }
-
         .donut-inner-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .donut-title { font-size: 13px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
-        .donut-value { font-size: 44px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; }
-        .donut-subtitle { font-size: 13px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
+        .donut-value { font-size: 46px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; }
+        .donut-subtitle { font-size: 14px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
 
-        .macros-legend { display: flex; justify-content: space-around; background: rgba(255,255,255,0.6); padding: 15px; border-radius: 20px; }
-        .legend-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .legend-icon { font-size: 24px; }
+        /* Мини-кольца макросов */
+        .macro-legend-card { display: flex; justify-content: space-between; background: rgba(255,255,255,0.6); padding: 15px 10px; border-radius: 24px; box-shadow: inset 0 2px 10px rgba(255,255,255,0.5); }
+        .legend-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;}
+        .mini-ring-wrap { position: relative; width: 56px; height: 56px; margin-bottom: 4px; }
+        .mini-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .mini-ring-wrap circle { fill: none; stroke-linecap: round; stroke-width: 5; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .mini-icon { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 24px; }
+        
         .legend-title { font-size: 12px; color: var(--text-gray); font-weight: 500; }
-        .legend-value { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+        .legend-value { font-size: 14px; font-weight: 700; color: var(--text-dark); }
 
-        /* Вода и Анимация Капелек */
+        /* Вода */
         .water-header { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; color: var(--water-blue); font-weight: 600; font-size: 18px; }
         .glasses { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: nowrap; }
         .glass { font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.06); transition: all 0.3s ease; }
-        
-        @keyframes waterDropSplash {
-            0% { transform: scale(1) translateY(0); }
-            40% { transform: scale(1.3) translateY(-4px); }
-            100% { transform: scale(1.15) translateY(0); }
-        }
-        
-        .glass.filled { 
-            color: var(--water-blue); 
-            transform: scale(1.15); 
-            filter: drop-shadow(0 4px 6px rgba(0,122,255,0.3)); 
-            animation: waterDropSplash 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        
+        @keyframes bounceDrop { 0% { transform: scale(1) translateY(0); } 50% { transform: scale(1.2) translateY(-4px); } 100% { transform: scale(1.15) translateY(0); } }
+        .glass.filled { color: var(--water-blue); transform: scale(1.15); filter: drop-shadow(0 4px 6px rgba(0,122,255,0.3)); animation: bounceDrop 0.4s ease; }
         #water-text { color: var(--text-gray); font-size: 13px; margin: 0; font-weight: 500; text-align: center; }
 
         .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -111,7 +97,7 @@
         .buttons-column { display: flex; flex-direction: column; gap: 12px; }
 
         /* История */
-        .history-item { background: rgba(255,255,255,0.6); padding: 16px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.8); }
+        .history-item { background: rgba(255,255,255,0.6); padding: 16px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 12px auto;}
         .history-emoji { font-size: 32px; margin-right: 15px; background: #fff; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .history-info { flex: 1; }
         .history-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
@@ -136,8 +122,7 @@
         .bottom-nav { 
             position: fixed; bottom: 25px; left: 20px; right: 20px; 
             background: rgba(28, 28, 30, 0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-radius: 35px; 
-            display: flex; justify-content: space-around; padding: 15px 10px; 
+            border-radius: 35px; display: flex; justify-content: space-around; padding: 15px 10px; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.25); z-index: 1000; max-width: 600px; margin: 0 auto;
         }
         .nav-item { text-align: center; color: #8E8E93; font-size: 11px; font-weight: 500; flex: 1; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
@@ -155,46 +140,50 @@
     <div id="tab-diary-summary" class="screen active-screen">
         
         <div class="card" style="text-align: center;">
-            <div class="big-donut-wrap">
+            <div class="cal-donut-wrap">
                 <svg viewBox="0 0 200 200">
-                    <g transform="rotate(-90 100 100)">
-                        <circle class="circle-bg" cx="100" cy="100" r="85"></circle>
-                        <circle id="svg-cal" cx="100" cy="100" r="85" style="stroke: var(--macro-cal); stroke-dasharray: 0 535;"></circle>
-                    </g>
-
-                    <g transform="rotate(-90 100 100)">
-                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 310"></circle>
-                        <circle id="svg-seg-protein" cx="100" cy="100" r="68" style="stroke: var(--macro-protein); stroke-dasharray: 0 310;"></circle>
-                    </g>
-                    <g transform="rotate(30 100 100)">
-                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 310"></circle>
-                        <circle id="svg-seg-fat" cx="100" cy="100" r="68" style="stroke: var(--macro-fat); stroke-dasharray: 0 310;"></circle>
-                    </g>
-                    <g transform="rotate(150 100 100)">
-                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 310"></circle>
-                        <circle id="svg-seg-carbs" cx="100" cy="100" r="68" style="stroke: var(--macro-carbs); stroke-dasharray: 0 310;"></circle>
-                    </g>
+                    <circle cx="100" cy="100" r="85" style="stroke: rgba(0,0,0,0.06);"></circle>
+                    <circle id="svg-cal" cx="100" cy="100" r="85" style="stroke: var(--macro-cal); stroke-dasharray: 534; stroke-dashoffset: 534;"></circle>
                 </svg>
                 <div class="donut-inner-text">
-                    <span class="donut-title">ОСТАЛОСЬ</span>
                     <span class="donut-value" id="cal-left">0</span>
                     <span class="donut-subtitle">из <span id="cal-target">0</span> ккал</span>
                 </div>
             </div>
             
-            <div class="macros-legend">
+            <div class="macro-legend-card">
                 <div class="legend-item">
-                    <i class="ph ph-egg legend-icon" style="color: var(--macro-protein);"></i>
+                    <div class="mini-ring-wrap">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="30" r="26" style="stroke: rgba(0,0,0,0.06);"></circle>
+                            <circle id="svg-protein" cx="30" cy="30" r="26" style="stroke: var(--macro-protein); stroke-dasharray: 164; stroke-dashoffset: 164;"></circle>
+                        </svg>
+                        <div class="mini-icon"><i class="ph ph-egg" style="color: var(--macro-protein);"></i></div>
+                    </div>
                     <span class="legend-title">Белки</span>
                     <span class="legend-value" id="protein-text">0г</span>
                 </div>
+                
                 <div class="legend-item">
-                    <i class="ph ph-drop legend-icon" style="color: var(--macro-fat);"></i>
+                    <div class="mini-ring-wrap">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="30" r="26" style="stroke: rgba(0,0,0,0.06);"></circle>
+                            <circle id="svg-fat" cx="30" cy="30" r="26" style="stroke: var(--macro-fat); stroke-dasharray: 164; stroke-dashoffset: 164;"></circle>
+                        </svg>
+                        <div class="mini-icon"><i class="ph ph-drop" style="color: var(--macro-fat);"></i></div>
+                    </div>
                     <span class="legend-title">Жиры</span>
                     <span class="legend-value" id="fat-text">0г</span>
                 </div>
+                
                 <div class="legend-item">
-                    <i class="ph ph-grains legend-icon" style="color: var(--macro-carbs);"></i>
+                    <div class="mini-ring-wrap">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="30" r="26" style="stroke: rgba(0,0,0,0.06);"></circle>
+                            <circle id="svg-carbs" cx="30" cy="30" r="26" style="stroke: var(--macro-carbs); stroke-dasharray: 164; stroke-dashoffset: 164;"></circle>
+                        </svg>
+                        <div class="mini-icon"><i class="ph ph-grains" style="color: var(--macro-carbs);"></i></div>
+                    </div>
                     <span class="legend-title">Углеводы</span>
                     <span class="legend-value" id="carbs-text">0г</span>
                 </div>
@@ -401,6 +390,16 @@
             setTimeout(() => { msg.style.display = 'none'; switchTab('diary-summary'); updateDashboard(); }, 1000);
         }
 
+        // Универсальная функция для любых кругов
+        function setRingProgress(id, current, max, radius) {
+            const circle = document.getElementById(id);
+            if(!circle) return;
+            const circ = 2 * Math.PI * radius;
+            circle.style.strokeDasharray = `${circ} ${circ}`;
+            const pct = max > 0 ? Math.min(Math.max(current / max, 0), 1) : 0;
+            setTimeout(() => { circle.style.strokeDashoffset = circ - (pct * circ); }, 50);
+        }
+
         function updateDashboard() {
             const target = window.userMacros; const consumed = window.consumedToday;
 
@@ -411,27 +410,12 @@
             document.getElementById('fat-text').innerText = `${consumed.fat} / ${target.fat} г`;
             document.getElementById('carbs-text').innerText = `${consumed.carbs} / ${target.carbs} г`;
 
-            // Обновляем Калории (Внешний круг)
-            const calCirc = 534; // 2 * PI * 85
-            const calCircle = document.getElementById('svg-cal');
-            if (calCircle) {
-                const calPct = target.cal > 0 ? Math.min(Math.max(consumed.cal / target.cal, 0), 1) : 0;
-                calCircle.style.strokeDasharray = `${calPct * calCirc} 535`;
-            }
-
-            // Обновляем раздельные отрезки БЖУ
-            const arcLen = 118; // Длина одного сектора
-            function updateArc(id, current, max) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const pct = max > 0 ? Math.min(Math.max(current / max, 0), 1) : 0;
-                    el.style.strokeDasharray = `${pct * arcLen} 310`;
-                }
-            }
-
-            updateArc('svg-seg-protein', consumed.protein, target.protein);
-            updateArc('svg-seg-fat', consumed.fat, target.fat);
-            updateArc('svg-seg-carbs', consumed.carbs, target.carbs);
+            // Калории (Внешний круг, r=85)
+            setRingProgress('svg-cal', consumed.cal, target.cal, 85);
+            // БЖУ (Мини-кольца, r=26)
+            setRingProgress('svg-protein', consumed.protein, target.protein, 26);
+            setRingProgress('svg-fat', consumed.fat, target.fat, 26);
+            setRingProgress('svg-carbs', consumed.carbs, target.carbs, 26);
         }
 
         function renderHistoryList() {
@@ -533,10 +517,7 @@
 
         function triggerGallery() { document.getElementById('gallery-input').click(); }
         
-        function closeAndSendPhoto() {
-            tg.openTelegramLink('https://t.me/calories_miniapp_bot');
-            tg.close();
-        }
+        function closeAndSendPhoto() { tg.openTelegramLink('https://t.me/calories_miniapp_bot'); tg.close(); }
         
         async function uploadImage(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -585,7 +566,7 @@
             btn.innerText = "Записать в дневник"; btn.disabled = false; window.history.replaceState({}, document.title, window.location.pathname);
             document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); updateDashboard();
 
-            // МАГИЯ АНИМАЦИИ: Конфетти при успешной записи!
+            // Большой Салют 
             if (typeof confetti === 'function') {
                 confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#007AFF', '#34C759', '#8A2BE2', '#FF4500'] });
             }
@@ -602,11 +583,31 @@
         }
 
         waterGlasses.forEach(glass => {
-            glass.addEventListener('click', async function() {
+            glass.addEventListener('click', async function(e) {
                 let clickedIndex = parseInt(this.getAttribute('data-index')); const today = getTodayDate(); let currentWater = window.waterHistory[today] || 0;
-                if (clickedIndex === currentWater) { window.waterHistory[today] = currentWater - 1; } else { window.waterHistory[today] = clickedIndex; }
+                let isAdding = true;
+
+                if (clickedIndex === currentWater) { 
+                    window.waterHistory[today] = currentWater - 1; 
+                    isAdding = false;
+                } else { 
+                    window.waterHistory[today] = clickedIndex; 
+                }
                 
                 updateWaterUI(window.waterHistory[today]);
+
+                // Маленькие водяные брызги при добавлении воды
+                if (isAdding && typeof confetti === 'function') {
+                    const rect = this.getBoundingClientRect();
+                    const x = (rect.left + rect.width / 2) / window.innerWidth;
+                    const y = (rect.top + rect.height / 2) / window.innerHeight;
+                    confetti({
+                        particleCount: 15, spread: 45, startVelocity: 15, decay: 0.9, gravity: 1,
+                        colors: ['#007AFF', '#4DA8DA', '#8EC5FC', '#FFFFFF'],
+                        origin: { x, y }, zIndex: 2000, disableForReducedMotion: true, scalar: 0.6
+                    });
+                }
+
                 await saveToCloud('water_history', JSON.stringify(window.waterHistory));
                 if (document.getElementById('tab-calendar').classList.contains('active-screen')) { renderSelectedDay(); }
             });
