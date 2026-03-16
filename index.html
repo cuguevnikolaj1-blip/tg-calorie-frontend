@@ -22,6 +22,7 @@
             --macro-fat: #FF4500;     
             --macro-carbs: #32CD32;   
             --water-blue: #007AFF;
+            --accent-red: #FF3B30;
             
             --radius: 28px;
         }
@@ -69,7 +70,8 @@
         .cal-donut-wrap circle { fill: none; stroke-linecap: round; stroke-width: 14; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
         .donut-inner-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .donut-value { font-size: 46px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; }
+        .donut-title { font-size: 13px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s;}
+        .donut-value { font-size: 46px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; transition: color 0.3s;}
         .donut-subtitle { font-size: 14px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
 
         /* Мини-кольца макросов */
@@ -135,7 +137,7 @@
 </head>
 <body>
 
-    <div id="loading-screen"><div class="loader-text" id="loader-message"><i class="ph ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i>Синхронизация...</div></div>
+    <div id="loading-screen"><div class="loader-text" id="loader-message"><i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i>Синхронизация...</div></div>
 
     <div id="tab-diary-summary" class="screen active-screen">
         
@@ -146,7 +148,8 @@
                     <circle id="svg-cal" cx="100" cy="100" r="85" style="stroke: var(--macro-cal); stroke-dasharray: 534; stroke-dashoffset: 534;"></circle>
                 </svg>
                 <div class="donut-inner-text">
-                    <span class="donut-value" id="cal-left">0</span>
+                    <span class="donut-title" id="main-cal-title">СЪЕДЕНО</span>
+                    <span class="donut-value" id="cal-consumed">0</span>
                     <span class="donut-subtitle">из <span id="cal-target">0</span> ккал</span>
                 </div>
             </div>
@@ -208,11 +211,11 @@
         <div class="card">
             <div class="input-row">
                 <input type="text" id="text-food-input" placeholder="Напиши, что съел...">
-                <button class="btn-primary" onclick="sendTextToAI()"><i class="ph ph-paper-plane-right" style="font-size: 24px;"></i></button>
+                <button class="btn-primary" onclick="sendTextToAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 24px;"></i></button>
             </div>
             <div class="buttons-column">
-                <button class="btn-primary" onclick="closeAndSendPhoto()"><i class="ph ph-camera"></i> Сфотографировать (жми 📎)</button>
-                <button class="btn-secondary" onclick="triggerGallery()"><i class="ph ph-image"></i> Выбрать из Галереи</button>
+                <button class="btn-primary" onclick="closeAndSendPhoto()"><i class="ph-bold ph-camera"></i> Сфотографировать (жми 📎)</button>
+                <button class="btn-secondary" onclick="triggerGallery()"><i class="ph-bold ph-image"></i> Выбрать из Галереи</button>
             </div>
             <input type="file" id="gallery-input" accept="image/*" style="display: none;" onchange="uploadImage(event)">
         </div>
@@ -227,9 +230,9 @@
         <h2>Мой Календарь</h2>
         <div class="card">
             <div class="calendar-header">
-                <button onclick="changeMonth(-1)"><i class="ph ph-caret-left"></i></button>
+                <button onclick="changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
                 <span id="calendar-month-year">...</span>
-                <button onclick="changeMonth(1)"><i class="ph ph-caret-right"></i></button>
+                <button onclick="changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
             </div>
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
@@ -258,7 +261,7 @@
                 </select>
             </div>
             <button class="btn-primary" onclick="calculateAndSaveKcal()" style="margin-top: 25px;">Сохранить параметры</button>
-            <p id="profile-saved-msg" style="color: var(--macro-protein); font-weight: 600; text-align: center; display: none; margin-top: 15px;"><i class="ph ph-check-circle"></i> Успешно обновлено!</p>
+            <p id="profile-saved-msg" style="color: var(--macro-protein); font-weight: 600; text-align: center; display: none; margin-top: 15px;"><i class="ph-bold ph-check-circle"></i> Успешно обновлено!</p>
         </div>
     </div>
 
@@ -271,7 +274,7 @@
                 <span id="sandbox-p">Б: 0</span><span id="sandbox-f">Ж: 0</span><span id="sandbox-c">У: 0</span>
             </div>
             <div style="background: rgba(255, 59, 48, 0.1); color: var(--accent-red); padding: 16px; border-radius: 16px; margin-bottom: 25px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                <i class="ph ph-warning-circle" style="font-size: 22px;"></i> <span>Аллергены: <strong id="food-allergens">Нет</strong></span>
+                <i class="ph-fill ph-warning-circle" style="font-size: 22px;"></i> <span>Аллергены: <strong id="food-allergens">Нет</strong></span>
             </div>
             <div class="buttons-column">
                 <button id="save-food-btn" class="btn-primary" onclick="saveRealFood()">Записать в дневник</button>
@@ -281,10 +284,10 @@
     </div>
 
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="switchTab('diary-summary')"><i class="ph ph-house nav-icon"></i>Главная</div>
-        <div class="nav-item" onclick="switchTab('history')"><i class="ph ph-clock-counter-clockwise nav-icon"></i>История</div>
-        <div class="nav-item" onclick="switchTab('calendar')"><i class="ph ph-calendar-check nav-icon"></i>Календарь</div>
-        <div class="nav-item" onclick="switchTab('profile')"><i class="ph ph-user nav-icon"></i>Профиль</div>
+        <div class="nav-item active" onclick="switchTab('diary-summary')"><i class="ph-fill ph-house nav-icon"></i>Главная</div>
+        <div class="nav-item" onclick="switchTab('history')"><i class="ph-fill ph-clock-counter-clockwise nav-icon"></i>История</div>
+        <div class="nav-item" onclick="switchTab('calendar')"><i class="ph-fill ph-calendar-check nav-icon"></i>Календарь</div>
+        <div class="nav-item" onclick="switchTab('profile')"><i class="ph-fill ph-user nav-icon"></i>Профиль</div>
     </div>
 
     <script>
@@ -390,7 +393,6 @@
             setTimeout(() => { msg.style.display = 'none'; switchTab('diary-summary'); updateDashboard(); }, 1000);
         }
 
-        // Универсальная функция для любых кругов
         function setRingProgress(id, current, max, radius) {
             const circle = document.getElementById(id);
             if(!circle) return;
@@ -403,8 +405,20 @@
         function updateDashboard() {
             const target = window.userMacros; const consumed = window.consumedToday;
 
-            document.getElementById('cal-left').innerText = Math.max(0, target.cal - consumed.cal);
+            // ОБНОВЛЕННАЯ ЛОГИКА: Показываем СЪЕДЕННЫЕ калории крупно
+            document.getElementById('cal-consumed').innerText = consumed.cal;
             document.getElementById('cal-target').innerText = target.cal;
+            
+            // Если перебор — меняем заголовок и цвет на красный
+            if (consumed.cal > target.cal) {
+                document.getElementById('main-cal-title').innerText = "ПЕРЕБОР";
+                document.getElementById('main-cal-title').style.color = "var(--accent-red)";
+                document.getElementById('cal-consumed').style.color = "var(--accent-red)";
+            } else {
+                document.getElementById('main-cal-title').innerText = "СЪЕДЕНО";
+                document.getElementById('main-cal-title').style.color = "var(--text-gray)";
+                document.getElementById('cal-consumed').style.color = "var(--text-dark)";
+            }
             
             document.getElementById('protein-text').innerText = `${consumed.protein} / ${target.protein} г`;
             document.getElementById('fat-text').innerText = `${consumed.fat} / ${target.fat} г`;
@@ -422,7 +436,7 @@
             const listContainer = document.getElementById('history-list'); listContainer.innerHTML = ''; 
 
             if (window.consumedItems.length === 0) {
-                listContainer.innerHTML = '<div style="text-align: center; color: var(--text-gray); padding: 50px 0;"><i class="ph ph-bowl-food" style="font-size: 56px; margin-bottom: 10px; color: rgba(0,0,0,0.1);"></i><br>Пока ничего не съедено</div>'; return;
+                listContainer.innerHTML = '<div style="text-align: center; color: var(--text-gray); padding: 50px 0;"><i class="ph-fill ph-bowl-food" style="font-size: 56px; margin-bottom: 10px; color: rgba(0,0,0,0.1);"></i><br>Пока ничего не съедено</div>'; return;
             }
 
             [...window.consumedItems].reverse().forEach(item => {
@@ -500,7 +514,7 @@
                         <span style="color: ${calColor};">${dayData.consumed.cal} / ${dayData.target.cal} ккал</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 600; color: var(--water-blue); display:flex; align-items:center; gap:5px; margin-bottom: 10px;">
-                        <i class="ph-bold ph-drop"></i> Вода: ${waterCount} стак. (${waterLiters} л)
+                        <i class="ph-fill ph-drop"></i> Вода: ${waterCount} стак. (${waterLiters} л)
                     </div>
                     <details open>
                         <summary><i class="ph-bold ph-caret-down"></i> Детали питания</summary>
@@ -566,7 +580,6 @@
             btn.innerText = "Записать в дневник"; btn.disabled = false; window.history.replaceState({}, document.title, window.location.pathname);
             document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); updateDashboard();
 
-            // Большой Салют 
             if (typeof confetti === 'function') {
                 confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#007AFF', '#34C759', '#8A2BE2', '#FF4500'] });
             }
@@ -596,15 +609,16 @@
                 
                 updateWaterUI(window.waterHistory[today]);
 
-                // Маленькие водяные брызги при добавлении воды
+                // ИДЕАЛЬНЫЕ КРУГЛЫЕ КАПЛИ ВОДЫ
                 if (isAdding && typeof confetti === 'function') {
                     const rect = this.getBoundingClientRect();
                     const x = (rect.left + rect.width / 2) / window.innerWidth;
                     const y = (rect.top + rect.height / 2) / window.innerHeight;
                     confetti({
-                        particleCount: 15, spread: 45, startVelocity: 15, decay: 0.9, gravity: 1,
+                        particleCount: 20, spread: 50, startVelocity: 15, decay: 0.9, gravity: 1.2,
                         colors: ['#007AFF', '#4DA8DA', '#8EC5FC', '#FFFFFF'],
-                        origin: { x, y }, zIndex: 2000, disableForReducedMotion: true, scalar: 0.6
+                        shapes: ['circle'], // Только круглые капли
+                        origin: { x, y }, zIndex: 2000, disableForReducedMotion: true, scalar: 0.4 // Маленький размер
                     });
                 }
 
