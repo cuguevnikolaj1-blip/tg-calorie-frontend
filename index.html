@@ -564,10 +564,20 @@
         }
 
         function renderSandbox() {
-            document.getElementById('loading-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'none';
-            document.getElementById('food-name').innerText = `${aiEmoji} ${aiName}`; document.getElementById('food-cal').innerText = aiCal + " ккал";
-            document.getElementById('sandbox-p').innerText = `Б: ${aiP} г`; document.getElementById('sandbox-f').innerText = `Ж: ${aiF} г`; document.getElementById('sandbox-c').innerText = `У: ${aiC} г`;
-            document.getElementById('food-allergens').innerText = aiAl; document.getElementById('sandbox-screen').style.display = 'block';
+            // Прячем все остальные вкладки, чтобы песочница была на самом верху!
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+            
+            document.getElementById('loading-screen').style.display = 'none'; 
+            document.getElementById('bottom-nav').style.display = 'none';
+            
+            document.getElementById('food-name').innerText = `${aiEmoji} ${aiName}`; 
+            document.getElementById('food-cal').innerText = aiCal + " ккал";
+            document.getElementById('sandbox-p').innerText = `Б: ${aiP} г`; 
+            document.getElementById('sandbox-f').innerText = `Ж: ${aiF} г`; 
+            document.getElementById('sandbox-c').innerText = `У: ${aiC} г`;
+            document.getElementById('food-allergens').innerText = aiAl; 
+            
+            document.getElementById('sandbox-screen').style.display = 'block';
         }
 
         async function saveRealFood() {
