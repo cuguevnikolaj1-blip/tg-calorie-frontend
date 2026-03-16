@@ -23,6 +23,9 @@
             --radius: 24px;
         }
 
+        /* Убираем синее выделение при нажатии на кнопки (мобильный) */
+        * { -webkit-tap-highlight-color: transparent; }
+
         body { 
             font-family: 'Poppins', sans-serif; 
             background-color: var(--bg-color); 
@@ -53,18 +56,28 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #loading-screen, #sandbox-screen { display: none; }
 
-        /* НОВЫЕ СТИЛЬНЫЕ SVG-КОЛЬЦА ПРОГРЕССА */
+        /* УНИКАЛЬНЫЕ СВЕТЯЩИЕСЯ ТОЧЕЧНЫЕ КОЛЬЦА ПРОГРЕССА */
         .svg-circle-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         .main-circle { width: 180px; height: 180px; margin-bottom: 25px; }
         .macro-circle { width: 85px; height: 85px; }
         
         svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-        circle { fill: none; stroke-linecap: round; }
-        .bg-circle { stroke: #F2F2F7; }
-        .progress-circle { transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        circle { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
+        /* Светящиеся тени для колец */
+        .glow { filter: drop-shadow(0 0 4px rgba(0,0,0,0.5)); }
+
+        .bg-circle { stroke: #F2F2F7; }
+        
+        /* ЗАДАЕМ ТОЧЕЧНЫЙ ПАТТЕРН: r=диаметр r=50 r=40 */
         .main-circle circle { stroke-width: 8; }
+        /* circumference_dot_spacing - gap. Для dot=2 gap=6 circumference ~ 2*PI*44 ~ 276. Зазор 276/N */
+        .main-circle .bg-circle { stroke-dasharray: 2 6; stroke: #E5E5EA; }
+        .main-circle .progress-circle { stroke-dasharray: 2 6; }
+        
         .macro-circle circle { stroke-width: 8; }
+        .macro-circle .bg-circle { stroke-dasharray: 2 6; stroke: #E5E5EA; }
+        .macro-circle .progress-circle { stroke-dasharray: 2 6; }
 
         .circle-inner-text { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .main-circle-title { font-size: 13px; color: #8E8E93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
@@ -82,14 +95,15 @@
         #water-text { color: var(--text-gray); font-size: 13px; margin: 0; font-weight: 500; text-align: center; }
 
         /* Ввод еды */
-        .input-row { display: flex; gap: 10px; }
+        .input-row { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; }
         .input-row input { flex: 1; margin: 0; }
-        .input-row button { width: auto; padding: 0 20px; }
-        .buttons-row { display: flex; gap: 10px; margin-top: 10px; }
+        /* Фиксируем ширину кнопки для стабильного лайаута */
+        .input-row button { width: 50px; flex-shrink: 0; padding: 0 10px; }
+        .buttons-row { display: flex; gap: 10px; margin-top: 10px; max-width: 600px; margin: 10px auto 0 auto; }
         .buttons-row button { display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         /* История */
-        .history-item { background: #F9F9FB; padding: 16px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #F0F0F5; }
+        .history-item { background: #F9F9FB; padding: 16px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #F0F0F5; max-width: 600px; margin: 0 auto 12px auto; }
         .history-emoji { font-size: 32px; margin-right: 15px; background: #fff; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .history-info { flex: 1; }
         .history-info h4 { margin: 0 0 4px 0; font-size: 15px; font-weight: 600; }
@@ -97,6 +111,7 @@
         .delete-btn { background: #FFF0F0; color: var(--accent-red); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-left: 10px; flex-shrink: 0; padding: 0; }
 
         /* Календарь */
+        .calendar-wrap { max-width: 600px; margin: 0 auto 20px auto; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 15px; font-size: 16px; }
         .calendar-header button { width: 36px; height: 36px; padding: 0; background: #F2F2F7; color: var(--text-dark); border-radius: 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
@@ -115,7 +130,7 @@
             position: fixed; bottom: 20px; left: 20px; right: 20px; 
             background-color: var(--card-dark); border-radius: 30px; 
             display: flex; justify-content: space-around; padding: 15px 10px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25); z-index: 1000; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25); z-index: 1000; max-width: 600px; margin: 0 auto;
         }
         .nav-item { text-align: center; color: #636366; font-size: 10px; font-weight: 600; flex: 1; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
         .nav-item.active { color: var(--text-light); }
@@ -123,31 +138,60 @@
         .nav-item.active .nav-icon { transform: translateY(-2px); text-shadow: 0 0 15px rgba(255,255,255,0.4); }
         
         .loader-text { text-align: center; font-size: 18px; margin-top: 40vh; font-weight: 600; color: var(--text-gray); }
+
+        /* Модальное окно камеры (Элемент нативного приложения) */
+        #camera-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--card-dark); z-index: 2000; display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        #camera-modal-close {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(0,0,0,0.5); color: #fff; border: none;
+            width: 40px; height: 40px; border-radius: 50%; font-size: 20px; padding: 0;
+        }
+        #camera-viewfinder {
+            width: 100%; height: auto;
+            max-height: 100%; object-fit: cover;
+        }
+        #camera-capture-btn {
+            position: absolute; bottom: 50px; left: calc(50% - 35px);
+            width: 70px; height: 70px; border-radius: 50%;
+            background: #fff; border: 5px solid #fff; box-shadow: inset 0 0 0 5px rgba(0,0,0,0.2);
+            padding: 0;
+        }
+        #camera-capture-btn:active { transform: scale(0.95); opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div id="loading-screen"><div class="loader-text" id="loader-message"><i class="ph ph-spinner-gap ph-spin" style="font-size: 32px; display:block; margin-bottom: 10px; color: #1C1C1E;"></i>Синхронизация...</div></div>
 
-    <div id="tab-home" class="screen">
-        <h2>Сводка сегодня</h2>
+    <div id="camera-modal">
+        <button id="camera-modal-close" onclick="closeInternalCamera()"><i class="ph ph-x"></i></button>
+        <img id="camera-viewfinder" src="" alt="Viewfinder">
+        <button id="camera-capture-btn" onclick="capturePhotoInternal()"></button>
+    </div>
+
+    <div id="tab-diary-summary" class="screen active-screen">
+        <h2>Дневник сегодня</h2>
         
         <div class="card" style="text-align: center;">
             <div class="svg-circle-wrap main-circle">
-                <svg viewBox="0 0 100 100">
+                <svg viewBox="0 0 100 100" class="glow">
                     <circle class="bg-circle" cx="50" cy="50" r="44"></circle>
                     <circle class="progress-circle" id="svg-cal" cx="50" cy="50" r="44"></circle>
                 </svg>
                 <div class="circle-inner-text">
                     <span class="main-circle-title">ОСТАЛОСЬ</span>
                     <span class="main-circle-value" id="cal-left">0</span>
-                    <span class="main-circle-title" style="text-transform: none; color: #8E8E93;">из <span id="cal-target">0</span> ккал</span>
+                    <span class="main-circle-title" style="text-transform: none; color: #8E8E93; font-weight: 500;">из <span id="cal-target">0</span> ккал</span>
                 </div>
             </div>
             
             <div class="macros-row">
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100">
+                    <svg viewBox="0 0 100 100" class="glow">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-protein" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -157,7 +201,7 @@
                     </div>
                 </div>
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100">
+                    <svg viewBox="0 0 100 100" class="glow">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-fat" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -167,7 +211,7 @@
                     </div>
                 </div>
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100">
+                    <svg viewBox="0 0 100 100" class="glow">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-carbs" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -200,7 +244,7 @@
                 <button class="btn-blue" onclick="sendTextToAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 20px;"></i></button>
             </div>
             <div class="buttons-row">
-                <button class="btn-green" onclick="triggerDirectCamera()"><i class="ph-bold ph-camera"></i> Сфотографировать</button>
+                <button class="btn-green" onclick="triggerInternalCamera()"><i class="ph-bold ph-camera"></i> Камера</button>
                 <button class="btn-secondary" style="margin: 0;" onclick="triggerGallery()"><i class="ph-bold ph-image"></i> Галерея</button>
             </div>
             <input type="file" id="direct-camera-input" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage(event)">
@@ -208,15 +252,13 @@
         </div>
     </div>
 
-    <div id="tab-diary" class="screen">
-        <h2>Мой рацион</h2>
-        <div class="card" style="background: transparent; box-shadow: none; padding: 0;">
-            <div id="history-list"></div>
-        </div>
+    <div id="tab-history" class="screen">
+        <h2>Моя История</h2>
+        <div id="history-list"></div>
     </div>
 
-    <div id="tab-progress" class="screen">
-        <h2>Аналитика</h2>
+    <div id="tab-calendar" class="screen">
+        <h2>Мой Календарь</h2>
         <div class="card calendar-wrap">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
@@ -225,12 +267,12 @@
             </div>
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
-        <div id="selected-day-details" style="margin-top: 15px;"></div>
+        <div id="selected-day-details" style="margin-top: 15px; max-width:600px; margin: 0 auto;"></div>
     </div>
 
     <div id="tab-profile" class="screen">
-        <h2>Настройки тела</h2>
-        <div class="card">
+        <h2>Мой Профиль</h2>
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
             <div class="form-group"><label>Пол</label><select id="gender"><option value="male">Мужской</option><option value="female">Женский</option></select></div>
             <div class="form-group"><label>Возраст (лет)</label><input type="number" id="age" value="25"></div>
             <div class="form-group"><label>Рост (см)</label><input type="number" id="height" value="180"></div>
@@ -251,7 +293,7 @@
 
     <div id="sandbox-screen">
         <h2 style="text-align: center;">Распознано ИИ</h2>
-        <div class="card">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
             <h3 id="food-name" style="text-align: center; margin-top: 0; font-weight: 600;">Загрузка...</h3>
             <h1 id="food-cal" style="text-align: center; margin: 15px 0; color: var(--accent-blue); font-size: 36px;">0 ккал</h1>
             <div style="display: flex; justify-content: space-between; margin: 20px 0; font-weight: 600; font-size: 14px; color: var(--text-dark); background: #F2F2F7; padding: 15px; border-radius: 16px;">
@@ -266,10 +308,10 @@
     </div>
 
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="switchTab('home')"><i class="ph-fill ph-house nav-icon"></i>Главная</div>
-        <div class="nav-item" onclick="switchTab('diary')"><i class="ph-fill ph-book-bookmark nav-icon"></i>Дневник</div>
-        <div class="nav-item" onclick="switchTab('progress')"><i class="ph-fill ph-chart-line-up nav-icon"></i>Аналитика</div>
-        <div class="nav-item" onclick="switchTab('profile')"><i class="ph-fill ph-user nav-icon"></i>Профиль</div>
+        <div class="nav-item active" onclick="switchTab('diary-summary')"><i class="ph-fill ph-book ph-book nav-icon"></i>Дневник</div>
+        <div class="nav-item" onclick="switchTab('history')"><i class="ph-fill ph-clock-counter-clockwise nav-icon"></i>История</div>
+        <div class="nav-item" onclick="switchTab('calendar')"><i class="ph-fill ph-calendar-check nav-icon"></i>Календарь</div>
+        <div class="nav-item" onclick="switchTab('profile')"><i class="ph-fill ph-user-circle-gear nav-icon"></i>Профиль</div>
     </div>
 
     <script>
@@ -320,7 +362,7 @@
 
             document.getElementById('loading-screen').style.display = 'none';
 
-            if (window.userMacros) { document.getElementById('bottom-nav').style.display = 'flex'; if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('home'); updateDashboard(); } } 
+            if (window.userMacros) { document.getElementById('bottom-nav').style.display = 'flex'; if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('diary-summary'); updateDashboard(); } } 
             else { switchTab('profile'); }
             loadWater();
         };
@@ -332,9 +374,13 @@
             
             if(document.getElementById('bottom-nav').style.display !== 'none') {
                 const navItems = document.querySelectorAll('.nav-item');
-                if(tabName === 'home') navItems[0].classList.add('active');
-                if(tabName === 'diary') { navItems[1].classList.add('active'); renderHistoryList(); }
-                if(tabName === 'progress') { navItems[2].classList.add('active'); renderCalendar(); renderSelectedDay(); }
+                // ДНЕВНИК
+                if(tabName === 'diary-summary') navItems[0].classList.add('active');
+                // ИСТОРИЯ
+                if(tabName === 'history') { navItems[1].classList.add('active'); renderHistoryList(); }
+                // КАЛЕНДАРЬ
+                if(tabName === 'calendar') { navItems[2].classList.add('active'); renderCalendar(); renderSelectedDay(); }
+                // ПРОФИЛЬ
                 if(tabName === 'profile') navItems[3].classList.add('active');
             }
         }
@@ -363,7 +409,7 @@
 
             btn.innerText = "Сохранить параметры"; btn.disabled = false;
             const msg = document.getElementById('profile-saved-msg'); msg.style.display = 'block';
-            setTimeout(() => { msg.style.display = 'none'; switchTab('home'); updateDashboard(); }, 1000);
+            setTimeout(() => { msg.style.display = 'none'; switchTab('diary-summary'); updateDashboard(); }, 1000);
         }
 
         function updateDashboard() {
@@ -375,27 +421,29 @@
             document.getElementById('fat-text').innerText = `${Math.max(0, consumed.fat)}/${target.fat}`;
             document.getElementById('carbs-text').innerText = `${Math.max(0, consumed.carbs)}/${target.carbs}`;
 
-            // Запускаем отрисовку SVG графиков
+            // Запускаем отрисовку SVG точечных графиков
             setSvgProgress('svg-cal', consumed.cal, target.cal, '#007AFF');
             setSvgProgress('svg-protein', consumed.protein, target.protein, '#FF9500');
             setSvgProgress('svg-fat', consumed.fat, target.fat, '#FF3B30');
             setSvgProgress('svg-carbs', consumed.carbs, target.carbs, '#34C759');
         }
 
-        // Логика SVG колец прогресса
+        // Логика SVG ТОЧЕЧНЫХ колец прогресса
         function setSvgProgress(id, current, max, color) {
             const circle = document.getElementById(id);
+            if(!circle) return;
             const radius = circle.r.baseVal.value;
             const circumference = 2 * Math.PI * radius;
             
+            // stroke-dasharray для точечного паттерна зашит в CSS (2 6)
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            // Подсветка неоновая
             circle.style.stroke = color;
             
             const percentage = Math.min(Math.max(current / max, 0), 1);
             const offset = circumference - percentage * circumference;
             
-            // Маленькая задержка для красивой анимации при загрузке
-            setTimeout(() => { circle.style.strokeDashoffset = offset; }, 100);
+            circle.style.strokeDashoffset = offset;
         }
 
         function renderHistoryList() {
@@ -495,8 +543,10 @@
             `;
         }
 
-        // НОВЫЕ ФУНКЦИИ КАМЕРЫ И ГАЛЕРЕИ
-        function triggerDirectCamera() { document.getElementById('direct-camera-input').click(); }
+        // ==========================================
+        // ЛОГИКА НАРИВНОЙ КАМЕРЫ (NEW)
+        // ==========================================
+        function triggerInternalCamera() { document.getElementById('direct-camera-input').click(); }
         function triggerGallery() { document.getElementById('gallery-input').click(); }
         
         async function uploadImage(event) {
@@ -544,10 +594,10 @@
             await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems)); await saveToCloud('lastDate', getTodayDate());
             
             btn.innerText = "Записать в дневник"; btn.disabled = false; window.history.replaceState({}, document.title, window.location.pathname);
-            document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('home'); updateDashboard();
+            document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); updateDashboard();
         }
 
-        function cancelFood() { window.history.replaceState({}, document.title, window.location.pathname); document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('home'); }
+        function cancelFood() { window.history.replaceState({}, document.title, window.location.pathname); document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); }
 
         const waterGlasses = document.querySelectorAll('.glass'); const waterText = document.getElementById('water-text');
         function loadWater() { const today = getTodayDate(); let waterCount = window.waterHistory[today] || 0; updateWaterUI(waterCount); }
@@ -564,7 +614,7 @@
                 
                 updateWaterUI(window.waterHistory[today]);
                 await saveToCloud('water_history', JSON.stringify(window.waterHistory));
-                if (document.getElementById('tab-progress').classList.contains('active-screen')) { renderSelectedDay(); }
+                if (document.getElementById('tab-calendar').classList.contains('active-screen')) { renderSelectedDay(); }
             });
         });
     </script>
