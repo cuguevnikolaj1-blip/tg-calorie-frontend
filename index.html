@@ -186,6 +186,7 @@
         window.consumedToday = null;
         window.consumedItems = [];
         window.historyLog = {}; 
+        window.waterHistory = {};
 
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
@@ -212,6 +213,10 @@
             let consumedItemsStr = await getFromCloud('consumedItems');
             let historyLogStr = await getFromCloud('historyLog');
             let lastDateStr = await getFromCloud('lastDate');
+            
+            // Загружаем воду из облака Telegram!
+            let waterHistoryStr = await getFromCloud('water_history');
+            window.waterHistory = waterHistoryStr ? JSON.parse(waterHistoryStr) : {};
             
             const today = getTodayDate();
             window.historyLog = historyLogStr ? JSON.parse(historyLogStr) : {};
@@ -396,7 +401,7 @@
             }
 
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+            const waterHistory = window.waterHistory;
 
             for(let d = 1; d <= daysInMonth; d++) {
                 const dateObj = new Date(currentYear, currentMonth, d);
@@ -431,7 +436,7 @@
 
         function renderSelectedDay() {
             const container = document.getElementById('selected-day-details');
-            const waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
+            const waterHistory = window.waterHistory;
             const waterCount = waterHistory[selectedDateStr] || 0;
             const waterLiters = (waterCount * 0.25).toFixed(2);
             
@@ -570,13 +575,15 @@
     tg.close(); 
 }
 
+        // ==========================================
+        // ЛОГИКА ТРЕКЕРА ВОДЫ (ТЕПЕРЬ В ОБЛАКЕ)
+        // ==========================================
         const waterGlasses = document.querySelectorAll('.glass');
         const waterText = document.getElementById('water-text');
 
         function loadWater() {
             const today = getTodayDate();
-            let waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
-            let waterCount = waterHistory[today] || 0;
+            let waterCount = window.waterHistory[today] || 0;
             updateWaterUI(waterCount);
         }
 
@@ -589,17 +596,27 @@
         }
 
         waterGlasses.forEach(glass => {
-            glass.addEventListener('click', function() {
+            glass.addEventListener('click', async function() {
                 let clickedIndex = parseInt(this.getAttribute('data-index'));
                 const today = getTodayDate();
-                let waterHistory = JSON.parse(localStorage.getItem('water_history')) || {};
-                let currentWater = waterHistory[today] || 0;
+                let currentWater = window.waterHistory[today] || 0;
                 
-                if (clickedIndex === currentWater) { waterHistory[today] = currentWater - 1; } 
-                else { waterHistory[today] = clickedIndex; }
+                if (clickedIndex === currentWater) { 
+                    window.waterHistory[today] = currentWater - 1; 
+                } else { 
+                    window.waterHistory[today] = clickedIndex; 
+                }
                 
-                localStorage.setItem('water_history', JSON.stringify(waterHistory));
-                updateWaterUI(waterHistory[today]);
+                // Мгновенно обновляем интерфейс для пользователя
+                updateWaterUI(window.waterHistory[today]);
+                
+                // Фоново сохраняем в облако Telegram
+                await saveToCloud('water_history', JSON.stringify(window.waterHistory));
+                
+                // Если сейчас открыта вкладка прогресса (календарь), обновляем и её
+                if (document.getElementById('tab-progress').classList.contains('active-screen')) {
+                    renderSelectedDay();
+                }
             });
         });
     </script>
