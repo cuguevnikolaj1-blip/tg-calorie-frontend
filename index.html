@@ -23,7 +23,6 @@
             --radius: 24px;
         }
 
-        /* Убираем синее выделение при нажатии на кнопки (мобильный) */
         * { -webkit-tap-highlight-color: transparent; }
 
         body { 
@@ -56,34 +55,24 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #loading-screen, #sandbox-screen { display: none; }
 
-        /* УНИКАЛЬНЫЕ СВЕТЯЩИЕСЯ ТОЧЕЧНЫЕ КОЛЬЦА ПРОГРЕССА */
-        .svg-circle-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-        .main-circle { width: 180px; height: 180px; margin-bottom: 25px; }
-        .macro-circle { width: 85px; height: 85px; }
+        /* ВЫТЯНУТАЯ КАПСУЛА (Главный прогресс) */
+        .svg-capsule-wrap { position: relative; width: 100%; max-width: 300px; margin: 0 auto 25px auto; height: 120px; }
+        .bg-capsule { fill: none; stroke: #F2F2F7; stroke-width: 14; }
+        .progress-capsule { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .capsule-inner-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         
-        svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-        circle { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        
-        /* Светящиеся тени для колец */
-        .glow { filter: drop-shadow(0 0 4px rgba(0,0,0,0.5)); }
-
-        .bg-circle { stroke: #F2F2F7; }
-        
-        /* ЗАДАЕМ ТОЧЕЧНЫЙ ПАТТЕРН: r=диаметр r=50 r=40 */
-        .main-circle circle { stroke-width: 8; }
-        /* circumference_dot_spacing - gap. Для dot=2 gap=6 circumference ~ 2*PI*44 ~ 276. Зазор 276/N */
-        .main-circle .bg-circle { stroke-dasharray: 2 6; stroke: #E5E5EA; }
-        .main-circle .progress-circle { stroke-dasharray: 2 6; }
-        
-        .macro-circle circle { stroke-width: 8; }
-        .macro-circle .bg-circle { stroke-dasharray: 2 6; stroke: #E5E5EA; }
-        .macro-circle .progress-circle { stroke-dasharray: 2 6; }
-
-        .circle-inner-text { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .main-circle-title { font-size: 13px; color: #8E8E93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         .main-circle-value { font-size: 34px; font-weight: 700; margin: 2px 0; color: var(--text-dark); }
+
+        /* ГЛАДКИЕ КРУГИ (БЖУ) */
+        .svg-circle-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .macro-circle { width: 85px; height: 85px; }
+        .macro-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+        .macro-circle circle { fill: none; stroke-linecap: round; stroke-width: 8; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bg-circle { stroke: #F2F2F7; }
         
-        .macros-row { display: flex; justify-content: space-between; }
+        .circle-inner-text { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .macros-row { display: flex; justify-content: space-between; max-width: 300px; margin: 0 auto;}
         .macro-name { font-size: 11px; color: var(--text-gray); font-weight: 600; margin-top: 2px;}
         .macro-value { font-size: 14px; font-weight: 700; color: var(--text-dark); }
 
@@ -94,13 +83,12 @@
         .glass.filled { color: var(--accent-blue); transform: scale(1.15); }
         #water-text { color: var(--text-gray); font-size: 13px; margin: 0; font-weight: 500; text-align: center; }
 
-        /* Ввод еды */
-        .input-row { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; }
+        /* Ввод еды (Исправлен баг на ПК) */
+        .input-row { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; align-items: stretch; }
         .input-row input { flex: 1; margin: 0; }
-        /* Фиксируем ширину кнопки для стабильного лайаута */
-        .input-row button { width: 50px; flex-shrink: 0; padding: 0 10px; }
-        .buttons-row { display: flex; gap: 10px; margin-top: 10px; max-width: 600px; margin: 10px auto 0 auto; }
-        .buttons-row button { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .input-row button { width: 56px; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .buttons-row { display: flex; gap: 10px; max-width: 600px; margin: 10px auto 0 auto; }
+        .buttons-row button { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
 
         /* История */
         .history-item { background: #F9F9FB; padding: 16px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #F0F0F5; max-width: 600px; margin: 0 auto 12px auto; }
@@ -138,51 +126,21 @@
         .nav-item.active .nav-icon { transform: translateY(-2px); text-shadow: 0 0 15px rgba(255,255,255,0.4); }
         
         .loader-text { text-align: center; font-size: 18px; margin-top: 40vh; font-weight: 600; color: var(--text-gray); }
-
-        /* Модальное окно камеры (Элемент нативного приложения) */
-        #camera-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--card-dark); z-index: 2000; display: none;
-            justify-content: center; align-items: center; flex-direction: column;
-        }
-        #camera-modal-close {
-            position: absolute; top: 20px; right: 20px;
-            background: rgba(0,0,0,0.5); color: #fff; border: none;
-            width: 40px; height: 40px; border-radius: 50%; font-size: 20px; padding: 0;
-        }
-        #camera-viewfinder {
-            width: 100%; height: auto;
-            max-height: 100%; object-fit: cover;
-        }
-        #camera-capture-btn {
-            position: absolute; bottom: 50px; left: calc(50% - 35px);
-            width: 70px; height: 70px; border-radius: 50%;
-            background: #fff; border: 5px solid #fff; box-shadow: inset 0 0 0 5px rgba(0,0,0,0.2);
-            padding: 0;
-        }
-        #camera-capture-btn:active { transform: scale(0.95); opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div id="loading-screen"><div class="loader-text" id="loader-message"><i class="ph ph-spinner-gap ph-spin" style="font-size: 32px; display:block; margin-bottom: 10px; color: #1C1C1E;"></i>Синхронизация...</div></div>
 
-    <div id="camera-modal">
-        <button id="camera-modal-close" onclick="closeInternalCamera()"><i class="ph ph-x"></i></button>
-        <img id="camera-viewfinder" src="" alt="Viewfinder">
-        <button id="camera-capture-btn" onclick="capturePhotoInternal()"></button>
-    </div>
-
     <div id="tab-diary-summary" class="screen active-screen">
-        <h2>Дневник сегодня</h2>
         
         <div class="card" style="text-align: center;">
-            <div class="svg-circle-wrap main-circle">
-                <svg viewBox="0 0 100 100" class="glow">
-                    <circle class="bg-circle" cx="50" cy="50" r="44"></circle>
-                    <circle class="progress-circle" id="svg-cal" cx="50" cy="50" r="44"></circle>
+            <div class="svg-capsule-wrap">
+                <svg viewBox="0 0 300 120">
+                    <path class="bg-capsule" d="M 150 15 L 235 15 A 45 45 0 0 1 235 105 L 65 105 A 45 45 0 0 1 65 15 Z" />
+                    <path class="progress-capsule" id="svg-cal" d="M 150 15 L 235 15 A 45 45 0 0 1 235 105 L 65 105 A 45 45 0 0 1 65 15 Z" />
                 </svg>
-                <div class="circle-inner-text">
+                <div class="capsule-inner-text">
                     <span class="main-circle-title">ОСТАЛОСЬ</span>
                     <span class="main-circle-value" id="cal-left">0</span>
                     <span class="main-circle-title" style="text-transform: none; color: #8E8E93; font-weight: 500;">из <span id="cal-target">0</span> ккал</span>
@@ -191,7 +149,7 @@
             
             <div class="macros-row">
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100" class="glow">
+                    <svg viewBox="0 0 100 100">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-protein" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -201,7 +159,7 @@
                     </div>
                 </div>
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100" class="glow">
+                    <svg viewBox="0 0 100 100">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-fat" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -211,7 +169,7 @@
                     </div>
                 </div>
                 <div class="svg-circle-wrap macro-circle">
-                    <svg viewBox="0 0 100 100" class="glow">
+                    <svg viewBox="0 0 100 100">
                         <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
                         <circle class="progress-circle" id="svg-carbs" cx="50" cy="50" r="40"></circle>
                     </svg>
@@ -244,10 +202,9 @@
                 <button class="btn-blue" onclick="sendTextToAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 20px;"></i></button>
             </div>
             <div class="buttons-row">
-                <button class="btn-green" onclick="triggerInternalCamera()"><i class="ph-bold ph-camera"></i> Камера</button>
+                <button class="btn-green" onclick="closeAndSendPhoto()"><i class="ph-bold ph-telegram-logo"></i> Отправить фото (жми 📎)</button>
                 <button class="btn-secondary" style="margin: 0;" onclick="triggerGallery()"><i class="ph-bold ph-image"></i> Галерея</button>
             </div>
-            <input type="file" id="direct-camera-input" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage(event)">
             <input type="file" id="gallery-input" accept="image/*" style="display: none;" onchange="uploadImage(event)">
         </div>
     </div>
@@ -273,6 +230,12 @@
     <div id="tab-profile" class="screen">
         <h2>Мой Профиль</h2>
         <div class="card" style="max-width: 600px; margin: 0 auto;">
+            
+            <div style="text-align: center; margin-bottom: 25px;">
+                <img id="profile-avatar" src="" style="width: 86px; height: 86px; border-radius: 50%; object-fit: cover; background: #E5E5EA; display: none; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <h3 id="profile-name" style="margin: 10px 0 0 0; font-size: 18px; color: var(--text-dark);"></h3>
+            </div>
+
             <div class="form-group"><label>Пол</label><select id="gender"><option value="male">Мужской</option><option value="female">Женский</option></select></div>
             <div class="form-group"><label>Возраст (лет)</label><input type="number" id="age" value="25"></div>
             <div class="form-group"><label>Рост (см)</label><input type="number" id="height" value="180"></div>
@@ -338,6 +301,17 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
+            // Подгружаем аватарку и имя из Telegram
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                if (user.photo_url) {
+                    const avatar = document.getElementById('profile-avatar');
+                    avatar.src = user.photo_url;
+                    avatar.style.display = 'block';
+                }
+                document.getElementById('profile-name').innerText = user.first_name || 'Мой профиль';
+            }
+
             const userMacrosStr = await getFromCloud('userMacros');
             let consumedTodayStr = await getFromCloud('consumedToday');
             let consumedItemsStr = await getFromCloud('consumedItems');
@@ -374,13 +348,9 @@
             
             if(document.getElementById('bottom-nav').style.display !== 'none') {
                 const navItems = document.querySelectorAll('.nav-item');
-                // ДНЕВНИК
                 if(tabName === 'diary-summary') navItems[0].classList.add('active');
-                // ИСТОРИЯ
                 if(tabName === 'history') { navItems[1].classList.add('active'); renderHistoryList(); }
-                // КАЛЕНДАРЬ
                 if(tabName === 'calendar') { navItems[2].classList.add('active'); renderCalendar(); renderSelectedDay(); }
-                // ПРОФИЛЬ
                 if(tabName === 'profile') navItems[3].classList.add('active');
             }
         }
@@ -421,29 +391,41 @@
             document.getElementById('fat-text').innerText = `${Math.max(0, consumed.fat)}/${target.fat}`;
             document.getElementById('carbs-text').innerText = `${Math.max(0, consumed.carbs)}/${target.carbs}`;
 
-            // Запускаем отрисовку SVG точечных графиков
-            setSvgProgress('svg-cal', consumed.cal, target.cal, '#007AFF');
+            // Запускаем отрисовку вытянутой капсулы и макросов
+            setCapsuleProgress('svg-cal', consumed.cal, target.cal, '#007AFF');
             setSvgProgress('svg-protein', consumed.protein, target.protein, '#FF9500');
             setSvgProgress('svg-fat', consumed.fat, target.fat, '#FF3B30');
             setSvgProgress('svg-carbs', consumed.carbs, target.carbs, '#34C759');
         }
 
-        // Логика SVG ТОЧЕЧНЫХ колец прогресса
+        // Логика вытянутой Капсулы
+        function setCapsuleProgress(id, current, max, color) {
+            const path = document.getElementById(id);
+            if(!path) return;
+            const length = 622.74; // Длина нашего пути капсулы
+            path.style.strokeDasharray = `${length} ${length}`;
+            path.style.stroke = color;
+            
+            const percentage = Math.min(Math.max(current / max, 0), 1);
+            const offset = length - percentage * length;
+            
+            setTimeout(() => { path.style.strokeDashoffset = offset; }, 50);
+        }
+
+        // Логика стандартных гладких колец
         function setSvgProgress(id, current, max, color) {
             const circle = document.getElementById(id);
             if(!circle) return;
             const radius = circle.r.baseVal.value;
             const circumference = 2 * Math.PI * radius;
             
-            // stroke-dasharray для точечного паттерна зашит в CSS (2 6)
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
-            // Подсветка неоновая
             circle.style.stroke = color;
             
             const percentage = Math.min(Math.max(current / max, 0), 1);
             const offset = circumference - percentage * circumference;
             
-            circle.style.strokeDashoffset = offset;
+            setTimeout(() => { circle.style.strokeDashoffset = offset; }, 50);
         }
 
         function renderHistoryList() {
@@ -543,11 +525,13 @@
             `;
         }
 
-        // ==========================================
-        // ЛОГИКА НАРИВНОЙ КАМЕРЫ (NEW)
-        // ==========================================
-        function triggerInternalCamera() { document.getElementById('direct-camera-input').click(); }
         function triggerGallery() { document.getElementById('gallery-input').click(); }
+        
+        // Надежный возврат в бота для фото
+        function closeAndSendPhoto() {
+            tg.openTelegramLink('https://t.me/calories_miniapp_bot');
+            tg.close();
+        }
         
         async function uploadImage(event) {
             const file = event.target.files[0]; if (!file) return;
