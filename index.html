@@ -10,17 +10,16 @@
 
     <style>
         :root {
-            /* Яркая палитра "Дизайн Б" */
             --bg-gradient: linear-gradient(135deg, #8EC5FC 0%, #E0C3FC 100%);
             --card-glass: rgba(255, 255, 255, 0.85);
             --card-border: rgba(255, 255, 255, 0.5);
             --text-dark: #2C2C2E;
             --text-gray: #8E8E93;
             
-            /* Цвета макросов для кольца */
-            --macro-protein: #8A2BE2; /* Яркий фиолетовый */
-            --macro-fat: #FF4500;     /* Сочный оранжевый */
-            --macro-carbs: #32CD32;   /* Лаймовый зеленый */
+            --macro-cal: #007AFF;     /* Синий - Калории */
+            --macro-protein: #8A2BE2; /* Фиолетовый - Белки */
+            --macro-fat: #FF4500;     /* Оранжевый - Жиры */
+            --macro-carbs: #32CD32;   /* Зеленый - Углеводы */
             --water-blue: #007AFF;
             
             --radius: 28px;
@@ -34,7 +33,6 @@
             background-attachment: fixed;
             color: var(--text-dark); 
             margin: 0; 
-            /* УВЕЛИЧЕН ОТСТУП СВЕРХУ (60px) чтобы не перекрывало крестиком */
             padding: 60px 20px 110px 20px; 
             box-sizing: border-box; 
             min-height: 100vh;
@@ -42,19 +40,14 @@
 
         h2 { text-align: left; font-size: 24px; font-weight: 700; margin-bottom: 20px; margin-top: 0; color: #1C1C1E; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
         
-        /* Эффект матового стекла для карточек */
+        /* Карточки с эффектом стекла */
         .card { 
             background: var(--card-glass); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius); 
-            padding: 24px; 
-            margin-bottom: 20px; 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border); border-radius: var(--radius); 
+            padding: 24px; margin-bottom: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 600px; margin-left: auto; margin-right: auto;
         }
 
         .form-group { margin-bottom: 15px; }
@@ -65,7 +58,6 @@
         button { border: none; padding: 16px; border-radius: 18px; width: 100%; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Poppins', sans-serif; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.97); }
         
-        /* Яркие градиентные кнопки */
         .btn-primary { background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); color: #fff; box-shadow: 0 6px 15px rgba(142, 55, 215, 0.3); }
         .btn-green { background: linear-gradient(135deg, #34C759 0%, #28A745 100%); color: #fff; box-shadow: 0 6px 15px rgba(52, 199, 89, 0.3); }
         .btn-secondary { background: rgba(255,255,255,0.7); color: var(--text-dark); border: 1px solid rgba(0,0,0,0.05); }
@@ -75,36 +67,32 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         #loading-screen, #sandbox-screen { display: none; }
 
-        /* НОВЫЙ БОЛЬШОЙ ГРАФИК БЖУ */
+        /* ИДЕАЛЬНЫЙ SVG-ГРАФИК С 3 ОТРЕЗКАМИ */
         .big-donut-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto 25px auto; }
         .big-donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05)); }
-        .big-donut-wrap circle { fill: none; stroke-width: 16; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        .circle-bg { stroke: rgba(0,0,0,0.04); }
-        #svg-seg-protein { stroke: var(--macro-protein); }
-        #svg-seg-fat { stroke: var(--macro-fat); }
-        #svg-seg-carbs { stroke: var(--macro-carbs); }
+        /* Общие свойства для всех путей */
+        circle { fill: none; stroke-linecap: round; stroke-width: 12; transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .circle-bg { stroke: rgba(0,0,0,0.06); }
 
         .donut-inner-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .donut-title { font-size: 13px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
-        .donut-value { font-size: 42px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; }
-        .donut-subtitle { font-size: 14px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
+        .donut-value { font-size: 44px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; }
+        .donut-subtitle { font-size: 13px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
 
-        /* ВЫНЕСЕННЫЕ ВНИЗ ЦИФРЫ БЖУ */
         .macros-legend { display: flex; justify-content: space-around; background: rgba(255,255,255,0.6); padding: 15px; border-radius: 20px; }
         .legend-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .legend-icon { font-size: 24px; }
         .legend-title { font-size: 12px; color: var(--text-gray); font-weight: 500; }
         .legend-value { font-size: 15px; font-weight: 700; color: var(--text-dark); }
 
         /* Вода */
         .water-header { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; color: var(--water-blue); font-weight: 600; font-size: 18px; }
-        .glasses { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .glass { font-size: 32px; cursor: pointer; color: rgba(0,0,0,0.06); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .glasses { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: nowrap; }
+        .glass { font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.06); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .glass.filled { color: var(--water-blue); transform: scale(1.15); filter: drop-shadow(0 4px 6px rgba(0,122,255,0.3)); }
         #water-text { color: var(--text-gray); font-size: 13px; margin: 0; font-weight: 500; text-align: center; }
 
-        /* Ввод еды (Широкие кнопки друг над другом) */
         .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .input-row input { flex: 1; margin: 0; }
         .input-row button { width: 60px; flex-shrink: 0; padding: 0; border-radius: 16px; }
@@ -157,10 +145,21 @@
         <div class="card" style="text-align: center;">
             <div class="big-donut-wrap">
                 <svg viewBox="0 0 200 200">
-                    <circle class="circle-bg" cx="100" cy="100" r="80"></circle>
-                    <circle id="svg-seg-protein" cx="100" cy="100" r="80"></circle>
-                    <circle id="svg-seg-fat" cx="100" cy="100" r="80"></circle>
-                    <circle id="svg-seg-carbs" cx="100" cy="100" r="80"></circle>
+                    <circle class="circle-bg" cx="100" cy="100" r="85"></circle>
+                    <circle id="svg-cal" cx="100" cy="100" r="85" style="stroke: var(--macro-cal); stroke-dasharray: 534; stroke-dashoffset: 534;"></circle>
+
+                    <g transform="rotate(10 100 100)">
+                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 309"></circle>
+                        <circle id="svg-seg-protein" cx="100" cy="100" r="68" style="stroke: var(--macro-protein); stroke-dasharray: 118 309; stroke-dashoffset: 118;"></circle>
+                    </g>
+                    <g transform="rotate(130 100 100)">
+                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 309"></circle>
+                        <circle id="svg-seg-fat" cx="100" cy="100" r="68" style="stroke: var(--macro-fat); stroke-dasharray: 118 309; stroke-dashoffset: 118;"></circle>
+                    </g>
+                    <g transform="rotate(250 100 100)">
+                        <circle class="circle-bg" cx="100" cy="100" r="68" stroke-dasharray="118 309"></circle>
+                        <circle id="svg-seg-carbs" cx="100" cy="100" r="68" style="stroke: var(--macro-carbs); stroke-dasharray: 118 309; stroke-dashoffset: 118;"></circle>
+                    </g>
                 </svg>
                 <div class="donut-inner-text">
                     <span class="donut-title">ОСТАЛОСЬ</span>
@@ -171,17 +170,17 @@
             
             <div class="macros-legend">
                 <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--macro-protein);"></div>
+                    <i class="ph ph-egg legend-icon" style="color: var(--macro-protein);"></i>
                     <span class="legend-title">Белки</span>
                     <span class="legend-value" id="protein-text">0г</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--macro-fat);"></div>
+                    <i class="ph ph-drop legend-icon" style="color: var(--macro-fat);"></i>
                     <span class="legend-title">Жиры</span>
                     <span class="legend-value" id="fat-text">0г</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--macro-carbs);"></div>
+                    <i class="ph ph-grains legend-icon" style="color: var(--macro-carbs);"></i>
                     <span class="legend-title">Углеводы</span>
                     <span class="legend-value" id="carbs-text">0г</span>
                 </div>
@@ -191,14 +190,14 @@
         <div class="card">
             <div class="water-header"><i class="ph ph-drop"></i> Вода (250 мл)</div>
             <div class="glasses" id="water-glasses">
-                <div class="glass" data-index="1"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="2"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="3"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="4"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="5"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="6"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="7"><i class="ph ph-drop"></i></div>
-                <div class="glass" data-index="8"><i class="ph ph-drop"></i></div>
+                <div class="glass" data-index="1"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="2"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="3"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="4"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="5"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="6"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="7"><i class="ph-fill ph-drop"></i></div>
+                <div class="glass" data-index="8"><i class="ph-fill ph-drop"></i></div>
             </div>
             <p id="water-text">Выпито: 0 / 8 стаканов (0.00 л)</p>
         </div>
@@ -209,7 +208,7 @@
                 <button class="btn-primary" onclick="sendTextToAI()"><i class="ph ph-paper-plane-right" style="font-size: 24px;"></i></button>
             </div>
             <div class="buttons-column">
-                <button class="btn-green" onclick="closeAndSendPhoto()"><i class="ph ph-camera"></i> Сфотографировать (жми 📎)</button>
+                <button class="btn-primary" onclick="closeAndSendPhoto()"><i class="ph ph-camera"></i> Сфотографировать (жми 📎)</button>
                 <button class="btn-secondary" onclick="triggerGallery()"><i class="ph ph-image"></i> Выбрать из Галереи</button>
             </div>
             <input type="file" id="gallery-input" accept="image/*" style="display: none;" onchange="uploadImage(event)">
@@ -264,7 +263,7 @@
         <h2 style="text-align: center;">Нейро-Анализ</h2>
         <div class="card">
             <h3 id="food-name" style="text-align: center; margin-top: 0; font-weight: 600;">Загрузка...</h3>
-            <h1 id="food-cal" style="text-align: center; margin: 15px 0; color: var(--macro-protein); font-size: 42px;">0 ккал</h1>
+            <h1 id="food-cal" style="text-align: center; margin: 15px 0; color: var(--macro-cal); font-size: 42px;">0 ккал</h1>
             <div style="display: flex; justify-content: space-between; margin: 25px 0; font-weight: 600; font-size: 15px; color: var(--text-dark); background: rgba(255,255,255,0.6); padding: 18px; border-radius: 20px;">
                 <span id="sandbox-p">Б: 0</span><span id="sandbox-f">Ж: 0</span><span id="sandbox-c">У: 0</span>
             </div>
@@ -309,6 +308,7 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
+            // Аватарка из ТГ
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 if (user.photo_url) {
@@ -398,55 +398,34 @@
             document.getElementById('fat-text').innerText = `${consumed.fat} / ${target.fat} г`;
             document.getElementById('carbs-text').innerText = `${consumed.carbs} / ${target.carbs} г`;
 
-            updateMultiSegmentDonut(consumed.protein, consumed.fat, consumed.carbs, target.cal);
-        }
-
-        // ЛОГИКА ЕДИНОГО КОЛЬЦА БЖУ
-        function updateMultiSegmentDonut(pGrams, fGrams, cGrams, targetKcal) {
-            const circ = 2 * Math.PI * 80; // Окружность (r=80) = ~502.65
-            
-            const pKcal = pGrams * 4;
-            const fKcal = fGrams * 9;
-            const cKcal = cGrams * 4;
-            const totalKcal = pKcal + fKcal + cKcal;
-
-            let pPct = pKcal / targetKcal;
-            let fPct = fKcal / targetKcal;
-            let cPct = cKcal / targetKcal;
-
-            // Если переели — сжимаем графики так, чтобы они занимали 100% круга пропорционально
-            if (totalKcal > targetKcal) {
-                pPct = pKcal / totalKcal;
-                fPct = fKcal / totalKcal;
-                cPct = cKcal / totalKcal;
+            // Обновляем Калории (Внешний круг)
+            const calCirc = 2 * Math.PI * 85; // ~534
+            const calCircle = document.getElementById('svg-cal');
+            if (calCircle) {
+                const calPct = Math.min(Math.max(consumed.cal / target.cal, 0), 1);
+                calCircle.style.strokeDashoffset = calCirc - (calPct * calCirc);
             }
 
-            const pLen = pPct * circ;
-            const fLen = fPct * circ;
-            const cLen = cPct * circ;
+            // Обновляем БЖУ (Внутренние отрезки, длина пути ~118)
+            const arcLen = 118;
+            function updateArc(id, current, max) {
+                const el = document.getElementById(id);
+                if (el) {
+                    const pct = Math.min(Math.max(current / max, 0), 1);
+                    el.style.strokeDashoffset = arcLen - (pct * arcLen);
+                }
+            }
 
-            const pCircle = document.getElementById('svg-seg-protein');
-            const fCircle = document.getElementById('svg-seg-fat');
-            const cCircle = document.getElementById('svg-seg-carbs');
-
-            // Белки начинаются с 12 часов (смещение 0)
-            pCircle.style.strokeDasharray = `${pLen} ${circ}`;
-            pCircle.style.strokeDashoffset = 0;
-
-            // Жиры начинаются там, где кончились белки
-            fCircle.style.strokeDasharray = `${fLen} ${circ}`;
-            fCircle.style.strokeDashoffset = -pLen;
-
-            // Углеводы начинаются там, где кончились жиры
-            cCircle.style.strokeDasharray = `${cLen} ${circ}`;
-            cCircle.style.strokeDashoffset = -(pLen + fLen);
+            updateArc('svg-seg-protein', consumed.protein, target.protein);
+            updateArc('svg-seg-fat', consumed.fat, target.fat);
+            updateArc('svg-seg-carbs', consumed.carbs, target.carbs);
         }
 
         function renderHistoryList() {
             const listContainer = document.getElementById('history-list'); listContainer.innerHTML = ''; 
 
             if (window.consumedItems.length === 0) {
-                listContainer.innerHTML = '<div style="text-align: center; color: var(--text-gray); padding: 50px 0;"><i class="ph ph-bowl-food" style="font-size: 56px; margin-bottom: 10px; color: rgba(0,0,0,0.1);"></i><br>Пока ничего не съедено</div>'; return;
+                listContainer.innerHTML = '<div style="text-align: center; color: var(--text-gray); padding: 50px 0;"><i class="ph-fill ph-bowl-food" style="font-size: 56px; margin-bottom: 10px; color: rgba(0,0,0,0.1);"></i><br>Пока ничего не съедено</div>'; return;
             }
 
             [...window.consumedItems].reverse().forEach(item => {
@@ -457,7 +436,7 @@
                         <h4>${item.name}</h4>
                         <p>🔥 ${item.cal} ккал <span style="margin-left:5px; color:#c7c7cc;">•</span> Б:${item.p} Ж:${item.f} У:${item.c}</p>
                     </div>
-                    <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph ph-trash"></i></button>
+                    <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
                 `;
                 listContainer.appendChild(div);
             });
@@ -520,14 +499,14 @@
             container.innerHTML = `
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 15px;">
-                        <span><i class="ph ph-calendar-blank"></i> ${selectedDateStr} ${isToday ? '(Сегодня)' : ''}</span>
+                        <span><i class="ph-bold ph-calendar-blank"></i> ${selectedDateStr} ${isToday ? '(Сегодня)' : ''}</span>
                         <span style="color: ${calColor};">${dayData.consumed.cal} / ${dayData.target.cal} ккал</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 600; color: var(--water-blue); display:flex; align-items:center; gap:5px; margin-bottom: 10px;">
-                        <i class="ph ph-drop"></i> Вода: ${waterCount} стак. (${waterLiters} л)
+                        <i class="ph-bold ph-drop"></i> Вода: ${waterCount} стак. (${waterLiters} л)
                     </div>
                     <details open>
-                        <summary><i class="ph ph-caret-down"></i> Детали питания</summary>
+                        <summary><i class="ph-bold ph-caret-down"></i> Детали питания</summary>
                         <div style="margin-top: 15px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.5); padding: 14px; border-radius: 14px; display:flex; justify-content:space-between;">
                             <span>Б: ${dayData.consumed.protein}г</span><span>Ж: ${dayData.consumed.fat}г</span><span>У: ${dayData.consumed.carbs}г</span>
                         </div>
@@ -572,7 +551,7 @@
         function showLoader(msg) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.getElementById('bottom-nav').style.display = 'none';
-            document.getElementById('loader-message').innerHTML = `<i class="ph ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i>${msg}`;
+            document.getElementById('loader-message').innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i>${msg}`;
             document.getElementById('loading-screen').style.display = 'block';
         }
 
