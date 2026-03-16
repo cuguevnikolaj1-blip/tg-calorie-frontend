@@ -627,6 +627,7 @@
                         zIndex: 2000,
                         scalar: 0.5             // Чуть больше, чтобы было похоже на брызги
                     });
+                }
 
                 await saveToCloud('water_history', JSON.stringify(window.waterHistory));
                 if (document.getElementById('tab-calendar').classList.contains('active-screen')) { renderSelectedDay(); }
