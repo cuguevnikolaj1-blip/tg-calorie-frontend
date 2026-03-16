@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Food Tracker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -24,25 +23,20 @@
             --radius: 24px;
         }
 
-        /* Нежный пастельный градиент на фоне (как на скрине В) */
         body { 
             font-family: 'Poppins', sans-serif; 
             background-color: var(--bg-color); 
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%), 
-                radial-gradient(at 100% 0%, rgba(0, 199, 190, 0.15) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.08) 0px, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(0, 199, 190, 0.12) 0px, transparent 50%);
             background-attachment: fixed;
             color: var(--text-dark); 
-            margin: 0; 
-            padding: 20px 20px 100px 20px; 
-            box-sizing: border-box; 
+            margin: 0; padding: 20px 20px 100px 20px; box-sizing: border-box; 
         }
 
         h2 { text-align: left; font-size: 22px; font-weight: 700; margin-bottom: 20px; margin-top: 10px; }
         
         .card { background: var(--card-light); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
-        .card-dark { background: var(--card-dark); color: var(--text-light); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
-
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         input[type="number"], input[type="text"], select { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #E5E5EA; box-sizing: border-box; font-size: 16px; background: #F2F2F7; color: var(--text-dark); font-family: 'Poppins', sans-serif; outline: none; transition: 0.2s; }
@@ -59,19 +53,26 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #loading-screen, #sandbox-screen { display: none; }
 
-        /* Круги прогресса */
-        .circle-wrap { position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-        .circle-inner { background-color: var(--card-dark); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .main-circle { width: 180px; height: 180px; background: conic-gradient(#333 100%, #333 0); margin-bottom: 25px; }
-        .main-circle .circle-inner { width: 155px; height: 155px; }
-        .main-circle-title { font-size: 13px; color: #8E8E93; font-weight: 500; }
-        .main-circle-value { font-size: 32px; font-weight: 700; margin: 2px 0; color: #fff; }
+        /* НОВЫЕ СТИЛЬНЫЕ SVG-КОЛЬЦА ПРОГРЕССА */
+        .svg-circle-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .main-circle { width: 180px; height: 180px; margin-bottom: 25px; }
+        .macro-circle { width: 85px; height: 85px; }
+        
+        svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+        circle { fill: none; stroke-linecap: round; }
+        .bg-circle { stroke: #F2F2F7; }
+        .progress-circle { transition: stroke-dashoffset 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .main-circle circle { stroke-width: 8; }
+        .macro-circle circle { stroke-width: 8; }
+
+        .circle-inner-text { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .main-circle-title { font-size: 13px; color: #8E8E93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        .main-circle-value { font-size: 34px; font-weight: 700; margin: 2px 0; color: var(--text-dark); }
         
         .macros-row { display: flex; justify-content: space-between; }
-        .macro-circle { width: 85px; height: 85px; background: conic-gradient(#E5E5EA 100%, #E5E5EA 0); }
-        .macro-circle .circle-inner { width: 70px; height: 70px; background-color: var(--card-light); }
-        .macro-name { font-size: 11px; color: var(--text-gray); font-weight: 500; }
-        .macro-value { font-size: 13px; font-weight: 700; color: var(--text-dark); }
+        .macro-name { font-size: 11px; color: var(--text-gray); font-weight: 600; margin-top: 2px;}
+        .macro-value { font-size: 14px; font-weight: 700; color: var(--text-dark); }
 
         /* Вода */
         .water-header { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; color: var(--accent-blue); font-weight: 600; font-size: 18px; }
@@ -109,7 +110,7 @@
         summary { font-size: 14px; color: var(--accent-blue); cursor: pointer; font-weight: 600; outline: none; margin-top: 15px; list-style: none; display: flex; align-items: center; gap: 5px; }
         summary::-webkit-details-marker { display: none; }
 
-        /* Плавающее меню навигации (Таблетка) */
+        /* Плавающее меню */
         .bottom-nav { 
             position: fixed; bottom: 20px; left: 20px; right: 20px; 
             background-color: var(--card-dark); border-radius: 30px; 
@@ -131,18 +132,50 @@
     <div id="tab-home" class="screen">
         <h2>Сводка сегодня</h2>
         
-        <div class="card-dark" style="text-align: center;">
-            <div class="circle-wrap main-circle" id="circle-cal">
-                <div class="circle-inner">
+        <div class="card" style="text-align: center;">
+            <div class="svg-circle-wrap main-circle">
+                <svg viewBox="0 0 100 100">
+                    <circle class="bg-circle" cx="50" cy="50" r="44"></circle>
+                    <circle class="progress-circle" id="svg-cal" cx="50" cy="50" r="44"></circle>
+                </svg>
+                <div class="circle-inner-text">
                     <span class="main-circle-title">ОСТАЛОСЬ</span>
                     <span class="main-circle-value" id="cal-left">0</span>
-                    <span class="main-circle-title">из <span id="cal-target">0</span> ккал</span>
+                    <span class="main-circle-title" style="text-transform: none; color: #8E8E93;">из <span id="cal-target">0</span> ккал</span>
                 </div>
             </div>
+            
             <div class="macros-row">
-                <div class="circle-wrap macro-circle" id="circle-protein"><div class="circle-inner"><span class="macro-value" id="protein-text">0/0</span><span class="macro-name">Белки</span></div></div>
-                <div class="circle-wrap macro-circle" id="circle-fat"><div class="circle-inner"><span class="macro-value" id="fat-text">0/0</span><span class="macro-name">Жиры</span></div></div>
-                <div class="circle-wrap macro-circle" id="circle-carbs"><div class="circle-inner"><span class="macro-value" id="carbs-text">0/0</span><span class="macro-name">Углеводы</span></div></div>
+                <div class="svg-circle-wrap macro-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
+                        <circle class="progress-circle" id="svg-protein" cx="50" cy="50" r="40"></circle>
+                    </svg>
+                    <div class="circle-inner-text">
+                        <span class="macro-value" id="protein-text">0/0</span>
+                        <span class="macro-name">Белки</span>
+                    </div>
+                </div>
+                <div class="svg-circle-wrap macro-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
+                        <circle class="progress-circle" id="svg-fat" cx="50" cy="50" r="40"></circle>
+                    </svg>
+                    <div class="circle-inner-text">
+                        <span class="macro-value" id="fat-text">0/0</span>
+                        <span class="macro-name">Жиры</span>
+                    </div>
+                </div>
+                <div class="svg-circle-wrap macro-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
+                        <circle class="progress-circle" id="svg-carbs" cx="50" cy="50" r="40"></circle>
+                    </svg>
+                    <div class="circle-inner-text">
+                        <span class="macro-value" id="carbs-text">0/0</span>
+                        <span class="macro-name">Угл.</span>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -167,10 +200,11 @@
                 <button class="btn-blue" onclick="sendTextToAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 20px;"></i></button>
             </div>
             <div class="buttons-row">
-                <button class="btn-green" onclick="closeAndSendPhoto()"><i class="ph-bold ph-camera"></i> Камера</button>
-                <button class="btn-secondary" style="margin: 0;" onclick="triggerCamera()"><i class="ph-bold ph-image"></i> Галерея</button>
+                <button class="btn-green" onclick="triggerDirectCamera()"><i class="ph-bold ph-camera"></i> Сфотографировать</button>
+                <button class="btn-secondary" style="margin: 0;" onclick="triggerGallery()"><i class="ph-bold ph-image"></i> Галерея</button>
             </div>
-            <input type="file" id="camera-input" accept="image/*" style="display: none;" onchange="uploadImage(event)">
+            <input type="file" id="direct-camera-input" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage(event)">
+            <input type="file" id="gallery-input" accept="image/*" style="display: none;" onchange="uploadImage(event)">
         </div>
     </div>
 
@@ -191,7 +225,6 @@
             </div>
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
-        
         <div id="selected-day-details" style="margin-top: 15px;"></div>
     </div>
 
@@ -342,15 +375,27 @@
             document.getElementById('fat-text').innerText = `${Math.max(0, consumed.fat)}/${target.fat}`;
             document.getElementById('carbs-text').innerText = `${Math.max(0, consumed.carbs)}/${target.carbs}`;
 
-            updateCircle('circle-cal', consumed.cal, target.cal, '#007AFF', '#333');
-            updateCircle('circle-protein', consumed.protein, target.protein, '#FF9500', '#E5E5EA');
-            updateCircle('circle-fat', consumed.fat, target.fat, '#FF3B30', '#E5E5EA');
-            updateCircle('circle-carbs', consumed.carbs, target.carbs, '#34C759', '#E5E5EA');
+            // Запускаем отрисовку SVG графиков
+            setSvgProgress('svg-cal', consumed.cal, target.cal, '#007AFF');
+            setSvgProgress('svg-protein', consumed.protein, target.protein, '#FF9500');
+            setSvgProgress('svg-fat', consumed.fat, target.fat, '#FF3B30');
+            setSvgProgress('svg-carbs', consumed.carbs, target.carbs, '#34C759');
         }
 
-        function updateCircle(elementId, current, max, activeColor, bgColor) {
-            const percentage = Math.min((Math.max(0, current) / max) * 100, 100);
-            document.getElementById(elementId).style.background = `conic-gradient(${activeColor} ${percentage}%, ${bgColor} 0)`;
+        // Логика SVG колец прогресса
+        function setSvgProgress(id, current, max, color) {
+            const circle = document.getElementById(id);
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.stroke = color;
+            
+            const percentage = Math.min(Math.max(current / max, 0), 1);
+            const offset = circumference - percentage * circumference;
+            
+            // Маленькая задержка для красивой анимации при загрузке
+            setTimeout(() => { circle.style.strokeDashoffset = offset; }, 100);
         }
 
         function renderHistoryList() {
@@ -450,7 +495,10 @@
             `;
         }
 
-        function triggerCamera() { document.getElementById('camera-input').click(); }
+        // НОВЫЕ ФУНКЦИИ КАМЕРЫ И ГАЛЕРЕИ
+        function triggerDirectCamera() { document.getElementById('direct-camera-input').click(); }
+        function triggerGallery() { document.getElementById('gallery-input').click(); }
+        
         async function uploadImage(event) {
             const file = event.target.files[0]; if (!file) return;
             showLoader('Изучаю фото...'); const formData = new FormData(); formData.append('image', file);
@@ -500,7 +548,6 @@
         }
 
         function cancelFood() { window.history.replaceState({}, document.title, window.location.pathname); document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('home'); }
-        function closeAndSendPhoto() { tg.openTelegramLink('https://t.me/calories_miniapp_bot'); tg.close(); }
 
         const waterGlasses = document.querySelectorAll('.glass'); const waterText = document.getElementById('water-text');
         function loadWater() { const today = getTodayDate(); let waterCount = window.waterHistory[today] || 0; updateWaterUI(waterCount); }
