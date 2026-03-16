@@ -534,11 +534,52 @@
         function closeAndSendPhoto() { tg.openTelegramLink('https://t.me/calories_miniapp_bot'); tg.close(); }
         
         async function uploadImage(event) {
-            const file = event.target.files[0]; if (!file) return;
-            showLoader('Изучаю фото...'); const formData = new FormData(); formData.append('image', file);
-            await sendToNgrok('/upload', formData, false); event.target.value = ''; 
-        }
+            const file = event.target.files[0]; 
+            if (!file) return;
+            
+            showLoader('Подготавливаю фото...'); 
 
+            // Читаем файл
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = async function() {
+                    // Создаем виртуальный холст для сжатия
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Уменьшаем до адекватных 800 пикселей
+
+                    // Высчитываем новые пропорции
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Рисуем картинку на холсте
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Превращаем холст в легкий стандартный JPEG (чинит HEIC формат айфонов!)
+                    canvas.toBlob(async (blob) => {
+                        const formData = new FormData();
+                        // Насильно называем файл image.jpg
+                        formData.append('image', blob, 'image.jpg'); 
+                        
+                        showLoader('Изучаю фото...');
+                        await sendToNgrok('/upload', formData, false);
+                    }, 'image/jpeg', 0.8); // 0.8 - качество 80% (весит мало, выглядит отлично)
+                };
+                img.src = e.target.result;
+            };
+            
+            // Запускаем чтение
+            reader.readAsDataURL(file);
+            event.target.value = ''; 
+        }
         async function sendTextToAI() {
             const textInput = document.getElementById('text-food-input').value; if(!textInput) return;
             showLoader('Считаю граммы...'); await sendToNgrok('/text', JSON.stringify({ text: textInput }), true);
