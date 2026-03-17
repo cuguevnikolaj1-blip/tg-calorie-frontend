@@ -370,13 +370,21 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
-            // Инициализация языка
+            // 1. Читаем язык из URL (тот, что передал Бот)
+            let urlLang = urlParams.get('lang'); 
             let savedLang = await getFromCloud('userLang');
-            if (savedLang) { currLang = savedLang; } 
-            else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) {
+
+            // 2. Устанавливаем приоритет языка
+            if (urlLang && i18n[urlLang]) {
+                currLang = urlLang;
+                await saveToCloud('userLang', currLang); // Перезаписываем локально, если бот прислал новый
+            } else if (savedLang) { 
+                currLang = savedLang; 
+            } else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) {
                 currLang = tg.initDataUnsafe.user.language_code;
             }
-            applyTranslations();
+            
+            applyTranslations(); // Применяем язык
 
             const user = tg.initDataUnsafe?.user;
             if (user) {
@@ -418,6 +426,27 @@
             
             updateWaterUI(window.waterHistory[today] || 0);
         };
+
+        // Обновленная функция смены языка в профиле
+        async function changeLanguage(langCode) {
+            currLang = langCode;
+            await saveToCloud('userLang', langCode);
+            applyTranslations();
+            
+            // Отправляем сигнал боту, чтобы он тоже сменил язык в базе данных
+            const userId = tg.initDataUnsafe?.user?.id;
+            if (userId) {
+                try {
+                    await fetch('https://64.188.61.46.nip.io/set_lang', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, lang: langCode })
+                    });
+                } catch (err) {
+                    console.log("Не удалось синхронизировать язык с ботом", err);
+                }
+            }
+        }
 
         function switchTab(tabName) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
