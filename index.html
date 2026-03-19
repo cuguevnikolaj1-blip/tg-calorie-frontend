@@ -407,7 +407,12 @@
 
         function saveToCloud(key, value) { return new Promise((resolve) => tg.CloudStorage.setItem(key, value, () => resolve(true))); }
         function getFromCloud(key) { return new Promise((resolve) => tg.CloudStorage.getItem(key, (err, val) => resolve(val))); }
-        function getFormattedDate(dateObj) { return dateObj.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit', year: 'numeric'}); }
+        function getFormattedDate(dateObj) {
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const y = dateObj.getFullYear();
+    return `${d}.${m}.${y}`;
+}
         function getTodayDate() { return getFormattedDate(new Date()); }
 
         window.onload = async function() {
@@ -466,9 +471,18 @@
             } else { switchTab('profile'); }
             
             updateWaterUI(window.waterHistory[today] || 0);
+            
+            // Сохраняем дату запуска приложения
+            window.currentAppDate = getTodayDate();
         };
 
         function switchTab(tabName) {
+            // Если день сменился — принудительно перезагружаем апп для архивации истории
+            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) {
+                window.location.reload();
+                return;
+            }
+
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active-screen');
@@ -704,6 +718,12 @@
         }
 
         async function saveRealFood() {
+            // Защита от сохранения в старый день
+            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) {
+                window.location.reload();
+                return;
+            }
+
             const btn = document.getElementById('save-food-btn'); btn.innerHTML = t('saving'); btn.disabled = true;
             window.consumedToday.cal += aiCal; window.consumedToday.protein += aiP; window.consumedToday.fat += aiF; window.consumedToday.carbs += aiC;
             window.consumedItems.push({ id: Date.now(), name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji });
