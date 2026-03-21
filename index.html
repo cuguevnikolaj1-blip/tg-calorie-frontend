@@ -513,9 +513,16 @@
             let bmr = gender === 'male' ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
             let tdee = Math.round(bmr * activity);
             
-            if (goal === 'lose') { tdee = Math.round(tdee * 0.80); } else if (goal === 'gain') { tdee = Math.round(tdee * 1.15); }
+            let pPct = 0.3, fPct = 0.3, cPct = 0.4; // Баланс по умолчанию (maintain)
+            if (goal === 'lose') { 
+                tdee = Math.round(tdee * 0.80); 
+                pPct = 0.4; fPct = 0.3; cPct = 0.3; // Сушка: больше белка, меньше углеводов
+            } else if (goal === 'gain') { 
+                tdee = Math.round(tdee * 1.15); 
+                pPct = 0.3; fPct = 0.2; cPct = 0.5; // Масса: больше углеводов для энергии
+            }
             
-            window.userMacros = { cal: tdee, protein: Math.round((tdee * 0.3) / 4), fat: Math.round((tdee * 0.3) / 9), carbs: Math.round((tdee * 0.4) / 4) };
+            window.userMacros = { cal: tdee, protein: Math.round((tdee * pPct) / 4), fat: Math.round((tdee * fPct) / 9), carbs: Math.round((tdee * cPct) / 4) };
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
             
             if(!window.consumedToday) {
@@ -564,6 +571,12 @@
             setRingProgress('svg-carbs', consumed.carbs, target.carbs, 26);
         }
 
+        // Функция для очистки текста от опасных символов (Защита от XSS)
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        }
+
         function renderHistoryList() {
             const listContainer = document.getElementById('history-list'); listContainer.innerHTML = ''; 
 
@@ -573,10 +586,13 @@
 
             [...window.consumedItems].reverse().forEach(item => {
                 const div = document.createElement('div'); div.className = 'history-item';
+                // Очищаем данные перед вставкой в HTML
+                const safeName = escapeHTML(item.name);
+                const safeEmoji = escapeHTML(item.em || '🍽');
                 div.innerHTML = `
-                    <div class="history-emoji">${item.em || '🍽'}</div>
+                    <div class="history-emoji">${safeEmoji}</div>
                     <div class="history-info">
-                        <h4>${item.name}</h4>
+                        <h4>${safeName}</h4>
                         <p>🔥 ${item.cal} ${t('kcal')} <span style="margin-left:5px; color:#c7c7cc;">•</span> P:${item.p} F:${item.f} C:${item.c}</p>
                     </div>
                     <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
@@ -585,15 +601,21 @@
             });
         }
 
-        async function deleteFood(id) {
-            const index = window.consumedItems.findIndex(i => i.id === id);
-            if (index > -1) {
-                const item = window.consumedItems[index];
-                window.consumedToday.cal -= item.cal; window.consumedToday.protein -= item.p; window.consumedToday.fat -= item.f; window.consumedToday.carbs -= item.c;
-                window.consumedItems.splice(index, 1);
-                await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems));
-                renderHistoryList(); updateDashboard();
-            }
+        function deleteFood(id) {
+            // Всплывающее окно подтверждения удаления
+            const confirmMsg = currLang === 'ru' ? "Точно удалить эту запись?" : "Delete this record?";
+            tg.showConfirm(confirmMsg, async function(confirmed) {
+                if (confirmed) {
+                    const index = window.consumedItems.findIndex(i => i.id === id);
+                    if (index > -1) {
+                        const item = window.consumedItems[index];
+                        window.consumedToday.cal -= item.cal; window.consumedToday.protein -= item.p; window.consumedToday.fat -= item.f; window.consumedToday.carbs -= item.c;
+                        window.consumedItems.splice(index, 1);
+                        await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems));
+                        renderHistoryList(); updateDashboard();
+                    }
+                }
+            });
         }
 
         let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear(); let selectedDateStr = getTodayDate();
@@ -636,7 +658,7 @@
             if (!dayData) { dayData = { consumed: {cal: 0, protein: 0, fat: 0, carbs: 0}, target: window.userMacros || {cal: 0}, items: [] }; }
 
             const isOver = dayData.consumed.cal > dayData.target.cal; const calColor = isOver ? 'var(--accent-red)' : 'var(--accent-green)';
-            let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:var(--text-gray); margin-top:8px; display:flex; align-items:center; gap:8px;"><span style="font-size: 18px; background:rgba(255,255,255,0.8); border-radius:8px; padding:4px;">${i.em || '🍽'}</span> ${i.name} — <b style="color:var(--text-dark)">${i.cal} ${t('kcal')}</b></div>`).join('');
+            let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:var(--text-gray); margin-top:8px; display:flex; align-items:center; gap:8px;"><span style="font-size: 18px; background:rgba(255,255,255,0.8); border-radius:8px; padding:4px;">${escapeHTML(i.em || '🍽')}</span> ${escapeHTML(i.name)} — <b style="color:var(--text-dark)">${i.cal} ${t('kcal')}</b></div>`).join('');
 
             container.innerHTML = `
                 <div class="card">
@@ -715,7 +737,9 @@
                 aiName = data.name; aiCal = parseInt(data.cal); aiP = parseInt(data.protein); aiF = parseInt(data.fat); aiC = parseInt(data.carbs); aiAl = data.allergens || '-'; aiEmoji = data.emoji || '🍽';
                 renderSandbox();
             } catch (err) { 
-                tg.showAlert(err.message || t('error_ai')); 
+                const msg = err.message || t('error_ai');
+                // Если мы в Телеграме - показываем красивый алерт, иначе - обычный браузерный
+                if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
                 document.getElementById('loading-screen').style.display = 'none'; 
             }
         }
