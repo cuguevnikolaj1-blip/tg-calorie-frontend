@@ -28,6 +28,7 @@
         input:focus { border-color: var(--macro-protein); background: #fff; }
         button { border: none; padding: 16px; border-radius: 18px; width: 100%; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Poppins', sans-serif; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-primary { background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); color: #fff; box-shadow: 0 6px 15px rgba(142, 55, 215, 0.3); }
         .btn-secondary { background: rgba(255,255,255,0.7); color: var(--text-dark); border: 1px solid rgba(0,0,0,0.05); }
 
@@ -70,7 +71,12 @@
         .history-info { flex: 1; }
         .history-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
         .history-info p { margin: 0; font-size: 13px; color: var(--text-gray); font-weight: 500;}
-        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--accent-red); width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 10px; flex-shrink: 0; padding: 0; }
+        
+        .action-btns { display: flex; gap: 8px; margin-left: 10px; flex-shrink: 0; }
+        .delete-btn, .edit-btn { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; padding: 0; border: none; cursor: pointer; transition: transform 0.2s;}
+        .delete-btn:active, .edit-btn:active { transform: scale(0.9); }
+        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--accent-red); }
+        .edit-btn { background: rgba(0, 122, 255, 0.1); color: var(--water-blue); }
 
         .calendar-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 20px; font-size: 18px; }
         .calendar-header button { width: 40px; height: 40px; padding: 0; background: rgba(255,255,255,0.5); color: var(--text-dark); border-radius: 14px; }
@@ -93,7 +99,6 @@
         
         .loader-text { text-align: center; font-size: 18px; margin-top: 40vh; font-weight: 600; color: var(--text-dark); }
 
-        /* --- СЛАЙДЕР ЯЗЫКОВ --- */
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         .lang-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
@@ -174,7 +179,7 @@
         
         <div class="card">
             <div class="input-row">
-                <input type="text" id="text-food-input" placeholder="What did you eat?">
+                <input type="text" id="text-food-input" placeholder="What did you eat?" onkeypress="handleTextEnter(event)">
                 <button class="btn-primary" onclick="sendTextToAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 24px;"></i></button>
             </div>
             <div class="buttons-column">
@@ -254,8 +259,8 @@
             
             <div id="refine-block" style="display: none; margin-bottom: 20px;">
                 <div class="input-row">
-                    <input type="text" id="refine-input" data-i18n-placeholder="refine_placeholder" placeholder="Например: съел половину...">
-                    <button class="btn-primary" onclick="sendRefineAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 24px;"></i></button>
+                    <input type="text" id="refine-input" data-i18n-placeholder="refine_placeholder" placeholder="Например: съел половину..." onkeypress="handleRefineEnter(event)">
+                    <button id="refine-btn" class="btn-primary" onclick="sendRefineAI()"><i class="ph-bold ph-paper-plane-right" style="font-size: 24px;"></i></button>
                 </div>
             </div>
 
@@ -280,6 +285,9 @@
         
         // ВЫНОСИМ IP СЕРВЕРА В ОДНО МЕСТО
         const API_BASE_URL = 'https://64.188.61.46.nip.io';
+        
+        // ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ РЕДАКТИРОВАНИЯ
+        let editingItemId = null;
         
         // I18N DICTIONARY
         const i18n = {
@@ -612,10 +620,25 @@
                         <h4>${safeName}</h4>
                         <p>🔥 ${item.cal} ${t('kcal')} <span style="margin-left:5px; color:#c7c7cc;">•</span> P:${item.p} F:${item.f} C:${item.c}</p>
                     </div>
-                    <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
+                    <div class="action-btns">
+                        <button class="edit-btn" onclick="editFood(${item.id})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
+                    </div>
                 `;
                 listContainer.appendChild(div);
             });
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Редактирование существующей еды
+        function editFood(id) {
+            const item = window.consumedItems.find(i => i.id === id);
+            if (!item) return;
+            
+            editingItemId = id; // Запоминаем ID еды, которую правим
+            aiName = item.name; aiCal = item.cal; aiP = item.p; aiF = item.f; aiC = item.c; aiAl = item.al || '-'; aiEmoji = item.em || '🍽';
+            
+            renderSandbox();
+            document.getElementById('refine-block').style.display = 'block'; // Сразу открываем поле ввода правки
         }
 
         function deleteFood(id) {
@@ -728,6 +751,10 @@
             reader.readAsDataURL(file); event.target.value = ''; 
         }
 
+        // ОБРАБОТКА ENTER ДЛЯ ПОЛЕЙ ВВОДА
+        function handleTextEnter(event) { if(event.key === 'Enter') sendTextToAI(); }
+        function handleRefineEnter(event) { if(event.key === 'Enter') sendRefineAI(); }
+
         async function sendTextToAI() {
             const textInput = document.getElementById('text-food-input').value; if(!textInput) return;
             showLoader(t('load_calc')); await sendToNgrok('/text', JSON.stringify({ text: textInput, lang: currLang }), true);
@@ -783,7 +810,11 @@
             const textInput = document.getElementById('refine-input').value;
             if(!textInput) return;
 
-            showLoader(t('load_calc')); // Используем лоадер "Считаю граммы..."
+            // ДЕЛАЕМ КРАСИВУЮ АНИМАЦИЮ ВНУТРИ КНОПКИ БЕЗ ПЕРЕЗАГРУЗКИ ЭКРАНА
+            const btn = document.getElementById('refine-btn');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 24px;"></i>';
+            btn.disabled = true;
 
             const foodData = { name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC };
             const bodyData = JSON.stringify({ lang: currLang, correction: textInput, food: foodData });
@@ -809,7 +840,10 @@
             } catch (err) {
                 const msg = err.message || t('error_ai');
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
-                renderSandbox(); 
+            } finally {
+                // ВОЗВРАЩАЕМ КНОПКУ В ИСХОДНОЕ СОСТОЯНИЕ
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
             }
         }
 
@@ -820,11 +854,27 @@
             }
 
             const btn = document.getElementById('save-food-btn'); btn.innerHTML = t('saving'); btn.disabled = true;
+            
+            // ЛОГИКА ДЛЯ СОХРАНЕНИЯ ОТРЕДАКТИРОВАННОЙ ЕДЫ
+            if (editingItemId) {
+                const oldIdx = window.consumedItems.findIndex(i => i.id === editingItemId);
+                if (oldIdx > -1) {
+                    const old = window.consumedItems[oldIdx];
+                    // Вычитаем старые макросы
+                    window.consumedToday.cal -= old.cal; window.consumedToday.protein -= old.p; window.consumedToday.fat -= old.f; window.consumedToday.carbs -= old.c;
+                    // Заменяем предмет в массиве
+                    window.consumedItems[oldIdx] = { id: editingItemId, name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji };
+                }
+                editingItemId = null; // Сбрасываем ID
+            } else {
+                window.consumedItems.push({ id: Date.now(), name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji });
+            }
+            
+            // Плюсуем новые макросы
             window.consumedToday.cal += aiCal; window.consumedToday.protein += aiP; window.consumedToday.fat += aiF; window.consumedToday.carbs += aiC;
-            window.consumedItems.push({ id: Date.now(), name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji });
             
             await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems)); await saveToCloud('lastDate', getTodayDate());
-            if (aiMsgId) {
+            if (aiMsgId && !editingItemId) { // Убираем галочку в боте только если это новая еда, а не редактирование старой
                 fetch(API_BASE_URL + '/saved', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' },
@@ -837,7 +887,13 @@
             if (typeof confetti === 'function') { confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#007AFF', '#34C759', '#8A2BE2', '#FF4500'] }); }
         }
 
-        function cancelFood() { window.history.replaceState({}, document.title, window.location.pathname); document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); }
+        function cancelFood() { 
+            editingItemId = null; // Сбрасываем ID при отмене
+            window.history.replaceState({}, document.title, window.location.pathname); 
+            document.getElementById('sandbox-screen').style.display = 'none'; 
+            document.getElementById('bottom-nav').style.display = 'flex'; 
+            switchTab('diary-summary'); 
+        }
 
         const waterGlasses = document.querySelectorAll('.glass'); const waterText = document.getElementById('water-text');
 
