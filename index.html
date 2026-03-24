@@ -405,6 +405,7 @@
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
         const urlParams = new URLSearchParams(window.location.search);
+        let aiMsgId = urlParams.get('mid');
         if(urlParams.get('name')) {
             aiName = urlParams.get('name'); aiCal = parseInt(urlParams.get('cal')) || 0;
             aiP = parseInt(urlParams.get('p')) || 0; aiF = parseInt(urlParams.get('f')) || 0;
@@ -771,7 +772,14 @@
             window.consumedItems.push({ id: Date.now(), name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji });
             
             await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems)); await saveToCloud('lastDate', getTodayDate());
-            
+            // Отправляем сигнал боту, чтобы он убрал кнопку в чате
+            if (aiMsgId) {
+                fetch(API_BASE_URL + '/saved', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' },
+                    body: JSON.stringify({ mid: aiMsgId })
+                }).catch(err => console.log("Не удалось обновить кнопку:", err));
+            }
             btn.innerHTML = `<span data-i18n="btn_save_food">${t('btn_save_food')}</span>`; btn.disabled = false; window.history.replaceState({}, document.title, window.location.pathname);
             document.getElementById('sandbox-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); updateDashboard();
 
