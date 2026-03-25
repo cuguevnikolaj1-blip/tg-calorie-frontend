@@ -21,7 +21,7 @@
         * { -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg-gradient); background-attachment: fixed; color: var(--text-dark); margin: 0; padding: 60px 20px 110px 20px; box-sizing: border-box; min-height: 100vh; }
         h2 { text-align: left; font-size: 24px; font-weight: 700; margin-bottom: 20px; margin-top: 0; color: #1C1C1E; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
-        .card { background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 600px; margin-left: auto; margin-right: auto; }
+        .card { position: relative; background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 600px; margin-left: auto; margin-right: auto; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         input[type="number"], input[type="text"], select { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); box-sizing: border-box; font-size: 16px; background: rgba(255,255,255,0.9); color: var(--text-dark); font-family: 'Poppins', sans-serif; outline: none; transition: 0.2s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
@@ -44,6 +44,9 @@
         .donut-title { font-size: 13px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s;}
         .donut-value { font-size: 46px; font-weight: 700; margin: 0; color: var(--text-dark); line-height: 1.1; transition: color 0.3s;}
         .donut-subtitle { font-size: 14px; color: var(--text-gray); font-weight: 500; margin-top: 4px; }
+
+        /* 🔥 СТИЛИ СТРИКОВ */
+        #streak-counter { display:none; position: absolute; top: 15px; left: 15px; background: rgba(255,149,0,0.15); color: #FF9500; padding: 6px 12px; border-radius: 14px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(255,149,0,0.2); border: 1px solid rgba(255,149,0,0.3); }
 
         .macro-legend-card { display: flex; justify-content: space-between; background: rgba(255,255,255,0.6); padding: 15px 10px; border-radius: 24px; box-shadow: inset 0 2px 10px rgba(255,255,255,0.5); }
         .legend-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;}
@@ -82,10 +85,14 @@
         .calendar-header button { width: 40px; height: 40px; padding: 0; background: rgba(255,255,255,0.5); color: var(--text-dark); border-radius: 14px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
         .calendar-day-name { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+        
+        /* 🔥 НОВЫЕ СТИЛИ ДЛЯ ОБВОДОК В КАЛЕНДАРЕ */
         .calendar-day { padding: 14px 0; border-radius: 14px; cursor: pointer; font-size: 15px; font-weight: 500; transition: 0.2s; background: transparent; }
         .calendar-day.empty { cursor: default; }
-        .calendar-day.has-data { background: rgba(255,255,255,0.6); color: var(--text-dark); font-weight: 600; }
-        .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); }
+        .calendar-day.status-green { box-shadow: inset 0 0 0 2.5px #34C759; background: rgba(255,255,255,0.8); font-weight: 600; }
+        .calendar-day.status-red { box-shadow: inset 0 0 0 2.5px #FF3B30; background: rgba(255,255,255,0.8); font-weight: 600; }
+        .calendar-day.status-yellow { box-shadow: inset 0 0 0 2.5px #FFCC00; background: rgba(255,255,255,0.8); font-weight: 600; }
+        .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); border: none; }
 
         details { width: 100%; }
         summary { font-size: 15px; color: var(--macro-protein); cursor: pointer; font-weight: 600; outline: none; margin-top: 15px; list-style: none; display: flex; align-items: center; gap: 5px; }
@@ -102,12 +109,7 @@
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         .lang-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .lang-toggle-thumb { 
-            position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); 
-            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); 
-            border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); 
-            z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); 
-        }
+        .lang-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
         .lang-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 24px; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; }
         .lang-btn:active { transform: scale(0.9); }
         .lang-toggle[data-active="en"] .lang-toggle-thumb { transform: translateX(0%); }
@@ -122,6 +124,8 @@
 
     <div id="tab-diary-summary" class="screen active-screen">
         <div class="card" style="text-align: center;">
+            <div id="streak-counter">🔥 0</div>
+            
             <div class="cal-donut-wrap">
                 <svg viewBox="0 0 200 200">
                     <circle cx="100" cy="100" r="85" style="stroke: rgba(0,0,0,0.06);"></circle>
@@ -308,7 +312,8 @@
                 load_prep: "Preparing photo...", load_ai: "Analyzing photo...", load_calc: "Calculating...", error_ai: "Oops, couldn't connect to AI. Try again!",
                 months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                btn_refine: "Refine portion", refine_placeholder: "e.g., I ate half..."
+                btn_refine: "Refine portion", refine_placeholder: "e.g., I ate half...",
+                days_streak: "day streak!"
             },
             ru: {
                 sync: "Синхронизация...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
@@ -327,7 +332,8 @@
                 load_prep: "Подготавливаю фото...", load_ai: "Изучаю фото...", load_calc: "Считаю граммы...", error_ai: "Ой, не удалось подключиться к ИИ. Попробуй еще раз!",
                 months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
                 days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-                btn_refine: "Уточнить порцию", refine_placeholder: "Например: съел половину..."
+                btn_refine: "Уточнить порцию", refine_placeholder: "Например: съел половину...",
+                days_streak: "дней подряд!"
             },
             es: {
                 sync: "Sincronizando...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
@@ -346,7 +352,8 @@
                 load_prep: "Preparando foto...", load_ai: "Analizando foto...", load_calc: "Calculando...", error_ai: "¡Ups, no se pudo conectar a la IA. ¡Inténtalo de nuevo!",
                 months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                 days: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'],
-                btn_refine: "Refinar porción", refine_placeholder: "Ej: comí la mitad..."
+                btn_refine: "Refinar porción", refine_placeholder: "Ej: comí la mitad...",
+                days_streak: "días seguidos!"
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
@@ -365,7 +372,8 @@
                 load_prep: "准备照片...", load_ai: "分析照片中...", load_calc: "计算中...", error_ai: "糟糕，无法连接到 AI。请重试！",
                 months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
                 days: ['一', '二', '三', '四', '五', '六', '日'],
-                btn_refine: "修改份量", refine_placeholder: "例如：我吃了一半..."
+                btn_refine: "修改份量", refine_placeholder: "例如：我吃了一半...",
+                days_streak: "天连续!"
             }
         };
 
@@ -378,14 +386,12 @@
                 const key = el.getAttribute('data-i18n');
                 if (el.tagName === 'OPTION') { el.text = t(key); } else { el.innerText = t(key); }
             });
-            // Перевод плейсхолдеров
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 el.placeholder = t(key);
             });
             document.getElementById('text-food-input').placeholder = t('placeholder');
             
-            // Двигаем слайдер на нужный язык
             document.getElementById('langToggle').setAttribute('data-active', currLang);
             
             updateWaterUI(window.waterHistory ? (window.waterHistory[getTodayDate()] || 0) : 0);
@@ -399,25 +405,18 @@
             await saveToCloud('userLang', langCode);
             applyTranslations();
             
-            // Отправляем сигнал боту, чтобы он тоже сменил язык в базе данных
             const userId = tg.initDataUnsafe?.user?.id;
             if (userId) {
                 try {
                     await fetch(`${API_BASE_URL}/set_lang`, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': tg.initData || '' // Передаем подпись для безопасности
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' },
                         body: JSON.stringify({ userId: userId, lang: langCode })
                     });
-                } catch (err) {
-                    console.log("Не удалось синхронизировать язык с ботом", err);
-                }
+                } catch (err) { console.log("Не удалось синхронизировать язык с ботом", err); }
             }
         }
 
-        // Слушатели кликов для нового слайдера языков
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const selectedLang = e.currentTarget.getAttribute('data-lang');
@@ -455,8 +454,7 @@
             let savedLang = await getFromCloud('userLang');
 
             if (urlLang && i18n[urlLang]) {
-                currLang = urlLang;
-                await saveToCloud('userLang', currLang); 
+                currLang = urlLang; await saveToCloud('userLang', currLang); 
             } else if (savedLang) { 
                 currLang = savedLang; 
             } else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) {
@@ -504,17 +502,11 @@
             } else { switchTab('profile'); }
             
             updateWaterUI(window.waterHistory[today] || 0);
-            
-            // Сохраняем дату запуска приложения
             window.currentAppDate = getTodayDate();
         };
 
         function switchTab(tabName) {
-            // Если день сменился — принудительно перезагружаем апп для архивации истории
-            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) {
-                window.location.reload();
-                return;
-            }
+            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) { window.location.reload(); return; }
 
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -522,7 +514,7 @@
             
             if(document.getElementById('bottom-nav').style.display !== 'none') {
                 const navItems = document.querySelectorAll('.nav-item');
-                if(tabName === 'diary-summary') navItems[0].classList.add('active');
+                if(tabName === 'diary-summary') { navItems[0].classList.add('active'); updateDashboard(); }
                 if(tabName === 'history') { navItems[1].classList.add('active'); renderHistoryList(); }
                 if(tabName === 'calendar') { navItems[2].classList.add('active'); renderCalendar(); renderSelectedDay(); }
                 if(tabName === 'profile') navItems[3].classList.add('active');
@@ -540,16 +532,12 @@
             let bmr = gender === 'male' ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
             let tdee = Math.round(bmr * activity);
             
-            let pPct = 0.3, fPct = 0.3, cPct = 0.4; // Баланс по умолчанию (maintain)
-            if (goal === 'lose') { 
-                tdee = Math.round(tdee * 0.80); 
-                pPct = 0.4; fPct = 0.3; cPct = 0.3; // Сушка: больше белка, меньше углеводов
-            } else if (goal === 'gain') { 
-                tdee = Math.round(tdee * 1.15); 
-                pPct = 0.3; fPct = 0.2; cPct = 0.5; // Масса: больше углеводов для энергии
-            }
+            let pPct = 0.3, fPct = 0.3, cPct = 0.4; 
+            if (goal === 'lose') { tdee = Math.round(tdee * 0.80); pPct = 0.4; fPct = 0.3; cPct = 0.3; } 
+            else if (goal === 'gain') { tdee = Math.round(tdee * 1.15); pPct = 0.3; fPct = 0.2; cPct = 0.5; }
             
-            window.userMacros = { cal: tdee, protein: Math.round((tdee * pPct) / 4), fat: Math.round((tdee * fPct) / 9), carbs: Math.round((tdee * cPct) / 4) };
+            // СОХРАНЯЕМ СТРОКУ GOAL ЧТОБЫ ЗНАТЬ ЕЁ ДЛЯ КАЛЕНДАРЯ
+            window.userMacros = { goal: goal, cal: tdee, protein: Math.round((tdee * pPct) / 4), fat: Math.round((tdee * fPct) / 9), carbs: Math.round((tdee * cPct) / 4) };
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
             
             if(!window.consumedToday) {
@@ -596,6 +584,63 @@
             setRingProgress('svg-protein', consumed.protein, target.protein, 26);
             setRingProgress('svg-fat', consumed.fat, target.fat, 26);
             setRingProgress('svg-carbs', consumed.carbs, target.carbs, 26);
+
+            // ОБНОВЛЯЕМ СТРИКИ КАЖДЫЙ РАЗ НА ГЛАВНОМ ЭКРАНЕ
+            calculateStreak();
+        }
+
+        // 🔥 ЛОГИКА СТРИКОВ
+        function calculateStreak() {
+            let streak = 0;
+            const today = new Date();
+            let todayData = window.consumedToday;
+            let todayIsGreen = false;
+            let todayIsLogged = false;
+
+            // Проверяем сегодняшний день
+            if (todayData && window.userMacros && todayData.cal > 0) {
+                todayIsLogged = true;
+                let pct = todayData.cal / window.userMacros.cal;
+                if (pct >= 0.9 && pct <= 1.1) {
+                    todayIsGreen = true;
+                    streak++;
+                }
+            }
+
+            // Если человек уже поел сегодня, но сломал норму - стрик сбрасывается
+            if (todayIsLogged && !todayIsGreen) {
+                updateStreakUI(0); return;
+            }
+
+            // Идем в прошлое
+            for (let i = 1; i < 365; i++) {
+                let d = new Date(today);
+                d.setDate(d.getDate() - i);
+                let dateStr = getFormattedDate(d);
+                let dayData = window.historyLog[dateStr];
+                
+                if (!dayData || !dayData.target || dayData.consumed.cal === 0) break; // Стрик прервался (не записывал еду)
+                
+                let pct = dayData.consumed.cal / dayData.target.cal;
+                if (pct >= 0.9 && pct <= 1.1) {
+                    streak++;
+                } else {
+                    break; // Стрик прервался (выпал из нормы)
+                }
+            }
+            updateStreakUI(streak);
+        }
+
+        function updateStreakUI(streak) {
+            const streakEl = document.getElementById('streak-counter');
+            if (streakEl) {
+                if (streak > 0) {
+                    streakEl.innerHTML = `🔥 ${streak} ${t('days_streak')}`;
+                    streakEl.style.display = 'inline-block';
+                } else {
+                    streakEl.style.display = 'none';
+                }
+            }
         }
 
         function escapeHTML(str) {
@@ -629,16 +674,12 @@
             });
         }
 
-        // НОВАЯ ФУНКЦИЯ: Редактирование существующей еды
         function editFood(id) {
             const item = window.consumedItems.find(i => i.id === id);
             if (!item) return;
-            
-            editingItemId = id; // Запоминаем ID еды, которую правим
+            editingItemId = id; 
             aiName = item.name; aiCal = item.cal; aiP = item.p; aiF = item.f; aiC = item.c; aiAl = item.al || '-'; aiEmoji = item.em || '🍽';
-            
-            renderSandbox();
-            document.getElementById('refine-block').style.display = 'block'; // Сразу открываем поле ввода правки
+            renderSandbox(); document.getElementById('refine-block').style.display = 'block'; 
         }
 
         function deleteFood(id) {
@@ -659,6 +700,15 @@
 
         let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear(); let selectedDateStr = getTodayDate();
 
+        // 🔥 ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ЦВЕТА ОБВОДКИ
+        function getDayColorStatus(pct, goal) {
+            goal = goal || 'maintain';
+            if (pct >= 0.9 && pct <= 1.1) return 'green'; // В яблочко!
+            if (goal === 'lose') return pct > 1.1 ? 'red' : 'yellow';
+            if (goal === 'gain') return pct < 0.9 ? 'red' : 'yellow';
+            return 'red'; // Удержание (Maintain) - любая ошибка это красный
+        }
+
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid'); const monthYearText = document.getElementById('calendar-month-year'); grid.innerHTML = '';
             monthYearText.innerText = `${t('months')[currentMonth]} ${currentYear}`;
@@ -674,7 +724,25 @@
                 const dateObj = new Date(currentYear, currentMonth, d); const dateStr = getFormattedDate(dateObj);
                 const el = document.createElement('div'); el.className = 'calendar-day'; el.innerText = d;
 
-                if(window.historyLog[dateStr] || waterHistory[dateStr] || dateStr === getTodayDate()) { el.classList.add('has-data'); }
+                let hasWater = waterHistory[dateStr] > 0;
+                let statusClass = '';
+
+                // Вычисляем цвет для Дня
+                if (dateStr === getTodayDate() && window.consumedToday && window.consumedToday.cal > 0) {
+                    let pct = window.consumedToday.cal / window.userMacros.cal;
+                    statusClass = getDayColorStatus(pct, window.userMacros.goal);
+                } else if (window.historyLog[dateStr] && window.historyLog[dateStr].consumed.cal > 0) {
+                    let pct = window.historyLog[dateStr].consumed.cal / window.historyLog[dateStr].target.cal;
+                    let pastGoal = window.historyLog[dateStr].target.goal || 'maintain';
+                    statusClass = getDayColorStatus(pct, pastGoal);
+                }
+
+                if (statusClass) {
+                    el.classList.add('status-' + statusClass);
+                } else if (hasWater) {
+                    el.classList.add('has-data'); // Просто вода, без еды
+                }
+
                 if(dateStr === selectedDateStr) el.classList.add('selected');
 
                 el.onclick = () => { selectedDateStr = dateStr; renderCalendar(); renderSelectedDay(); };
@@ -696,14 +764,24 @@
             if (!dayData && waterCount === 0) { container.innerHTML = `<div style="text-align: center; color: var(--text-gray); margin-top: 30px; font-weight: 500;">${t('no_data')}</div>`; return; }
             if (!dayData) { dayData = { consumed: {cal: 0, protein: 0, fat: 0, carbs: 0}, target: window.userMacros || {cal: 0}, items: [] }; }
 
-            const isOver = dayData.consumed.cal > dayData.target.cal; const calColor = isOver ? 'var(--accent-red)' : 'var(--accent-green)';
+            // Меняем цвет текста калорий в деталях дня
+            let dayPct = dayData.target.cal > 0 ? (dayData.consumed.cal / dayData.target.cal) : 0;
+            let statusColor = 'var(--text-dark)';
+            let pastGoal = dayData.target.goal || 'maintain';
+            if (dayData.consumed.cal > 0) {
+                let status = getDayColorStatus(dayPct, pastGoal);
+                if (status === 'green') statusColor = '#34C759';
+                if (status === 'red') statusColor = '#FF3B30';
+                if (status === 'yellow') statusColor = '#FFCC00';
+            }
+
             let itemsHtml = dayData.items.map(i => `<div style="font-size:13px; color:var(--text-gray); margin-top:8px; display:flex; align-items:center; gap:8px;"><span style="font-size: 18px; background:rgba(255,255,255,0.8); border-radius:8px; padding:4px;">${escapeHTML(i.em || '🍽')}</span> ${escapeHTML(i.name)} — <b style="color:var(--text-dark)">${i.cal} ${t('kcal')}</b></div>`).join('');
 
             container.innerHTML = `
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 15px;">
                         <span><i class="ph-bold ph-calendar-blank"></i> ${selectedDateStr} ${isToday ? t('today') : ''}</span>
-                        <span style="color: ${calColor};">${dayData.consumed.cal} / ${dayData.target.cal} ${t('kcal')}</span>
+                        <span style="color: ${statusColor};">${dayData.consumed.cal} / ${dayData.target.cal} ${t('kcal')}</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 600; color: var(--water-blue); display:flex; align-items:center; gap:5px; margin-bottom: 10px;">
                         <i class="ph-bold ph-drop"></i> ${t('water_drank').replace('{c}', waterCount).replace('{l}', waterLiters)}
@@ -751,7 +829,6 @@
             reader.readAsDataURL(file); event.target.value = ''; 
         }
 
-        // ОБРАБОТКА ENTER ДЛЯ ПОЛЕЙ ВВОДА
         function handleTextEnter(event) { if(event.key === 'Enter') sendTextToAI(); }
         function handleRefineEnter(event) { if(event.key === 'Enter') sendRefineAI(); }
 
@@ -764,11 +841,7 @@
         async function sendToNgrok(endpoint, bodyData, isJson) {
             try {
                 let finalEndpoint = endpoint + '?lang=' + currLang;
-                const options = { 
-                    method: 'POST', 
-                    body: bodyData,
-                    headers: { 'Authorization': tg.initData || '' }
-                }; 
+                const options = { method: 'POST', body: bodyData, headers: { 'Authorization': tg.initData || '' } }; 
                 if(isJson) options.headers['Content-Type'] = 'application/json';
                 
                 const response = await fetch(API_BASE_URL + finalEndpoint, options);
@@ -810,7 +883,6 @@
             const textInput = document.getElementById('refine-input').value;
             if(!textInput) return;
 
-            // ДЕЛАЕМ КРАСИВУЮ АНИМАЦИЮ ВНУТРИ КНОПКИ БЕЗ ПЕРЕЗАГРУЗКИ ЭКРАНА
             const btn = document.getElementById('refine-btn');
             const origHtml = btn.innerHTML;
             btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 24px;"></i>';
@@ -841,40 +913,31 @@
                 const msg = err.message || t('error_ai');
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
             } finally {
-                // ВОЗВРАЩАЕМ КНОПКУ В ИСХОДНОЕ СОСТОЯНИЕ
-                btn.innerHTML = origHtml;
-                btn.disabled = false;
+                btn.innerHTML = origHtml; btn.disabled = false;
             }
         }
 
         async function saveRealFood() {
-            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) {
-                window.location.reload();
-                return;
-            }
+            if (window.currentAppDate && window.currentAppDate !== getTodayDate()) { window.location.reload(); return; }
 
             const btn = document.getElementById('save-food-btn'); btn.innerHTML = t('saving'); btn.disabled = true;
             
-            // ЛОГИКА ДЛЯ СОХРАНЕНИЯ ОТРЕДАКТИРОВАННОЙ ЕДЫ
             if (editingItemId) {
                 const oldIdx = window.consumedItems.findIndex(i => i.id === editingItemId);
                 if (oldIdx > -1) {
                     const old = window.consumedItems[oldIdx];
-                    // Вычитаем старые макросы
                     window.consumedToday.cal -= old.cal; window.consumedToday.protein -= old.p; window.consumedToday.fat -= old.f; window.consumedToday.carbs -= old.c;
-                    // Заменяем предмет в массиве
                     window.consumedItems[oldIdx] = { id: editingItemId, name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji };
                 }
-                editingItemId = null; // Сбрасываем ID
+                editingItemId = null; 
             } else {
                 window.consumedItems.push({ id: Date.now(), name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC, al: aiAl, em: aiEmoji });
             }
             
-            // Плюсуем новые макросы
             window.consumedToday.cal += aiCal; window.consumedToday.protein += aiP; window.consumedToday.fat += aiF; window.consumedToday.carbs += aiC;
             
             await saveToCloud('consumedToday', JSON.stringify(window.consumedToday)); await saveToCloud('consumedItems', JSON.stringify(window.consumedItems)); await saveToCloud('lastDate', getTodayDate());
-            if (aiMsgId && !editingItemId) { // Убираем галочку в боте только если это новая еда, а не редактирование старой
+            if (aiMsgId && !editingItemId) { 
                 fetch(API_BASE_URL + '/saved', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' },
@@ -888,11 +951,9 @@
         }
 
         function cancelFood() { 
-            editingItemId = null; // Сбрасываем ID при отмене
-            window.history.replaceState({}, document.title, window.location.pathname); 
+            editingItemId = null; window.history.replaceState({}, document.title, window.location.pathname); 
             document.getElementById('sandbox-screen').style.display = 'none'; 
-            document.getElementById('bottom-nav').style.display = 'flex'; 
-            switchTab('diary-summary'); 
+            document.getElementById('bottom-nav').style.display = 'flex'; switchTab('diary-summary'); 
         }
 
         const waterGlasses = document.querySelectorAll('.glass'); const waterText = document.getElementById('water-text');
