@@ -458,10 +458,14 @@
 
         // Обработчик для тумблера уведомлений
         document.querySelectorAll('.notify-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const val = e.currentTarget.getAttribute('data-val');
                 document.getElementById('notifyToggle').setAttribute('data-active', val);
-                document.getElementById('notify').value = val; // Обновляем скрытый инпут
+                document.getElementById('notify').value = val;
+                
+                // Моментальное сохранение в облако и на сервер!
+                await saveToCloud('notifyPref', val);
+                syncSettingsWithServer(val);
             });
         });
 
@@ -494,7 +498,8 @@
 
         async function syncSettingsWithServer(notifyVal) {
             if (tg.initDataUnsafe?.user?.id) {
-                const tzOffset = Math.round(-new Date().getTimezoneOffset() / 60);
+                // Передаем точное смещение в МИНУТАХ
+                const tzOffset = -new Date().getTimezoneOffset(); 
                 try {
                     await fetch(API_BASE_URL + '/settings', {
                         method: 'POST',
