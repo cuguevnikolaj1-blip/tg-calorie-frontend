@@ -116,6 +116,15 @@
         .lang-toggle[data-active="es"] .lang-toggle-thumb { transform: translateX(200%); }
         .lang-toggle[data-active="zh"] .lang-toggle-thumb { transform: translateX(300%); }
 
+/* 🔥 СТИЛИ ДЛЯ ТУМБЛЕРА УВЕДОМЛЕНИЙ */
+        .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
+        .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
+        .notify-toggle[data-active="1"] .notify-toggle-thumb { transform: translateX(100%); }
+        .notify-toggle[data-active="0"] .notify-toggle-thumb { transform: translateX(0%); }
+        .notify-toggle[data-active="1"] .notify-btn[data-val="1"] { color: #fff; }
+        .notify-toggle[data-active="0"] .notify-btn[data-val="0"] { color: #fff; }
+
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; display: none; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.3s ease; }
         .modal-card { background: var(--card-glass); border: 1px solid var(--card-border); border-radius: 32px; padding: 35px 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-width: 340px; width: 100%; transform: scale(0.95); animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popUp { to { transform: scale(1); } }
@@ -246,12 +255,14 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label data-i18n="lbl_notify">Daily Reminders</label>
-                <select id="notify">
-                    <option value="1" data-i18n="notify_on">On</option>
-                    <option value="0" data-i18n="notify_off">Off</option>
-                </select>
+            <div class="lang-slider-wrapper">
+                <div class="lang-slider-title" data-i18n="lbl_notify">Уведомления</div>
+                <div class="notify-toggle" id="notifyToggle" data-active="1">
+                    <div class="notify-toggle-thumb"></div>
+                    <button class="notify-btn" data-val="0" data-i18n="notify_off">Выкл</button>
+                    <button class="notify-btn" data-val="1" data-i18n="notify_on">Вкл</button>
+                </div>
+                <input type="hidden" id="notify" value="1">
             </div>
 
             <div class="form-group"><label data-i18n="lbl_gender">Gender</label><select id="gender"><option value="male" data-i18n="gen_m">Male</option><option value="female" data-i18n="gen_f">Female</option></select></div>
@@ -335,7 +346,7 @@
                 days_streak: "day streak!", btn_lets_go: "Let's go!",
                 greet_ok_title: "Great Job!", greet_ok_text: "You hit your goal yesterday! Current streak: {s} days.",
                 greet_fail_title: "A Fresh Start", greet_fail_text: "Yesterday was a rest day. Let's get back on track and start a new streak!",
-                lbl_notify: "Daily Reminders (3 times/day)", notify_on: "On", notify_off: "Off"
+                lbl_notify: "Notifications", notify_on: "On", notify_off: "Off"
             },
             ru: {
                 sync: "Синхронизация...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
@@ -358,7 +369,7 @@
                 days_streak: "дней подряд!", btn_lets_go: "Погнали!",
                 greet_ok_title: "Отличная работа!", greet_ok_text: "Вчера вы уложились в норму! Ваша непрерывная серия: {s} дней.",
                 greet_fail_title: "Новый день — новый старт", greet_fail_text: "Вчера был день отдыха от диеты. Возвращаемся в строй и начинаем новую серию!",
-                lbl_notify: "Уведомления (3 раза в день)", notify_on: "Вкл", notify_off: "Выкл"
+                lbl_notify: "Уведомления", notify_on: "Вкл", notify_off: "Выкл"
             },
             es: {
                 sync: "Sincronizando...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
@@ -381,7 +392,7 @@
                 days_streak: "días seguidos!", btn_lets_go: "¡Vamos!",
                 greet_ok_title: "¡Gran Trabajo!", greet_ok_text: "¡Ayer alcanzaste tu meta! Racha actual: {s} días.",
                 greet_fail_title: "Un Nuevo Comienzo", greet_fail_text: "Ayer fue día de descanso. ¡Volvamos al camino y empecemos una nueva racha!",
-                lbl_notify: "Recordatorios diarios", notify_on: "Activado", notify_off: "Desactivado"
+                lbl_notify: "Notificaciones", notify_on: "Act", notify_off: "Des"
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
@@ -404,7 +415,7 @@
                 days_streak: "天连续!", btn_lets_go: "出发！",
                 greet_ok_title: "干得好！", greet_ok_text: "你昨天达到了目标！当前连续：{s} 天。",
                 greet_fail_title: "新的开始", greet_fail_text: "昨天是休息日。让我们重新回到正轨，开始新的记录！",
-                lbl_notify: "每日提醒", notify_on: "开", notify_off: "关"
+                lbl_notify: "通知", notify_on: "开", notify_off: "关"
             }
         };
 
@@ -443,6 +454,15 @@
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', (e) => { changeLanguage(e.currentTarget.getAttribute('data-lang')); });
+        });
+
+        // Обработчик для тумблера уведомлений
+        document.querySelectorAll('.notify-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const val = e.currentTarget.getAttribute('data-val');
+                document.getElementById('notifyToggle').setAttribute('data-active', val);
+                document.getElementById('notify').value = val; // Обновляем скрытый инпут
+            });
         });
 
         window.userMacros = null; window.consumedToday = null; window.consumedItems = [];
@@ -496,7 +516,8 @@
 
             let notifyPref = await getFromCloud('notifyPref') || '1';
             document.getElementById('notify').value = notifyPref;
-            syncSettingsWithServer(notifyPref); 
+            document.getElementById('notifyToggle').setAttribute('data-active', notifyPref); // <--- ЭТА НОВАЯ СТРОЧКА
+            syncSettingsWithServer(notifyPref);
 
             const user = tg.initDataUnsafe?.user;
             if (user) {
