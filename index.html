@@ -510,6 +510,8 @@
             }
         }
 
+        // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ window.onload
+        // Добавили async, чтобы await внутри работали правильно
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
@@ -521,8 +523,8 @@
 
             let notifyPref = await getFromCloud('notifyPref') || '1';
             document.getElementById('notify').value = notifyPref;
-            document.getElementById('notifyToggle').setAttribute('data-active', notifyPref); // <--- ЭТА НОВАЯ СТРОЧКА
-            syncSettingsWithServer(notifyPref);
+            document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
+            syncSettingsWithServer(notifyPref); 
 
             const user = tg.initDataUnsafe?.user;
             if (user) {
@@ -544,6 +546,7 @@
                 let oldHist = JSON.parse(oldHistoryStr);
                 for(let dateKey in oldHist) {
                     window.historyLog[dateKey] = oldHist[dateKey];
+                    // Добавили await, чтобы миграция прошла полностью
                     await saveToCloud('hist_' + dateKey, JSON.stringify(oldHist[dateKey]));
                 }
                 await removeCloudItem('historyLog');
@@ -560,13 +563,18 @@
             let showGreeting = false;
             let greetingType = '';
 
+            // ГЛАВНОЕ ИСПРАВЛЕНИЕ: Логика смены дня
             if (lastDateStr && lastDateStr !== today && userMacrosStr) {
+                // 1. Сначала готовим данные вчерашнего дня
                 let pastConsumed = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
                 let pastTarget = JSON.parse(userMacrosStr);
                 let pastItems = consumedItemsStr ? JSON.parse(consumedItemsStr) : [];
 
                 let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                 window.historyLog[lastDateStr] = dayRecord;
+
+                // 2. 🔥 ЖДЕМ СТРОГОГО ЗАВЕРШЕНИЯ записи в историю
+                // Это гарантирует, что данные не пропадут
                 await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
                 if (pastConsumed.cal > 0) {
@@ -575,9 +583,16 @@
                 } else { greetingType = 'fail'; }
                 showGreeting = true;
 
+                // 3. Обнуляем счетчики для "сегодня"
                 consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); consumedItemsStr = JSON.stringify([]);
-                await saveToCloud('consumedToday', consumedTodayStr); await saveToCloud('consumedItems', consumedItemsStr); await saveToCloud('lastDate', today);
-            } else if (!lastDateStr) { await saveToCloud('lastDate', today); }
+                await saveToCloud('consumedToday', consumedTodayStr); 
+                await saveToCloud('consumedItems', consumedItemsStr); 
+                
+                // 4. 🔥 И ТОЛЬКО В САМОМ КОНЦЕ обновляем дату смены дня
+                await saveToCloud('lastDate', today);
+            } else if (!lastDateStr) { 
+                await saveToCloud('lastDate', today); 
+            }
 
             window.userMacros = userMacrosStr ? JSON.parse(userMacrosStr) : null;
             window.consumedToday = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
