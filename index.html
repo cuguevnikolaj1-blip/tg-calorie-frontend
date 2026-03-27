@@ -609,7 +609,7 @@
                 let showGreeting = false;
                 let greetingType = '';
 
-                // 🔥 2. БЕЗОПАСНАЯ СМЕНА ДНЯ
+                // 🔥 2. БЕЗОПАСНАЯ СМЕНА ДНЯ (БЕЗ БЛОКИРОВОК)
                 if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
                     let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
                     let pastTarget = JSON.parse(userMacrosStr);
@@ -618,23 +618,23 @@
                     let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                     window.historyLog[lastDateStr] = dayRecord;
                     
-                    // СОХРАНЯЕМ ВЧЕРА И ЖДЕМ ОТВЕТА
-                    let saveSuccess = await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
+                    // Отправляем историю в облако (без блокировки смены дня)
+                    await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
+                    // Вычисляем статус для утренней заставки
                     if (pastConsumed.cal > 0) {
                         let pct = pastConsumed.cal / pastTarget.cal;
                         if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
                     } else { greetingType = 'fail'; }
                     
-                    // ТОЛЬКО ЕСЛИ ВЧЕРА УСПЕШНО СОХРАНИЛОСЬ — ОБНУЛЯЕМ СЕГОДНЯ
-                    if (saveSuccess) {
-                        showGreeting = true;
-                        consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
-                        consumedItemsStr = JSON.stringify([]);
-                        await saveToCloud('consumedToday', consumedTodayStr); 
-                        await saveToCloud('consumedItems', consumedItemsStr); 
-                        await saveToCloud('lastDate', today);
-                    }
+                    // 🔥 ВСЕГДА ПЕРЕХОДИМ В НОВЫЙ ДЕНЬ
+                    showGreeting = true;
+                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
+                    consumedItemsStr = JSON.stringify([]);
+                    
+                    await saveToCloud('consumedToday', consumedTodayStr); 
+                    await saveToCloud('consumedItems', consumedItemsStr); 
+                    await saveToCloud('lastDate', today);
                 } else if (!lastDateStr) { 
                     await saveToCloud('lastDate', today); 
                 }
