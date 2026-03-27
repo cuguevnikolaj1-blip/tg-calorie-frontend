@@ -515,99 +515,107 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
-            let urlLang = urlParams.get('lang'); let savedLang = await getFromCloud('userLang');
-            if (urlLang && i18n[urlLang]) { currLang = urlLang; await saveToCloud('userLang', currLang); } 
-            else if (savedLang) { currLang = savedLang; } 
-            else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
-            applyTranslations(); 
+            try {
+                let urlLang = urlParams.get('lang'); let savedLang = await getFromCloud('userLang');
+                if (urlLang && i18n[urlLang]) { currLang = urlLang; await saveToCloud('userLang', currLang); } 
+                else if (savedLang) { currLang = savedLang; } 
+                else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
+                applyTranslations(); 
 
-            let notifyPref = await getFromCloud('notifyPref') || '1';
-            document.getElementById('notify').value = notifyPref;
-            document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
-            syncSettingsWithServer(notifyPref); 
+                let notifyPref = await getFromCloud('notifyPref') || '1';
+                document.getElementById('notify').value = notifyPref;
+                document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
+                syncSettingsWithServer(notifyPref);
 
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
-                document.getElementById('profile-name').innerText = user.first_name || t('profile');
-            }
-
-            const allKeys = await getCloudKeys();
-            const histKeys = allKeys.filter(k => k.startsWith('hist_'));
-            const histValues = await getCloudItems(histKeys);
-            window.historyLog = {};
-            for(let k in histValues) {
-                let dateKey = k.replace('hist_', '');
-                window.historyLog[dateKey] = JSON.parse(histValues[k]);
-            }
-
-            let oldHistoryStr = await getFromCloud('historyLog');
-            if (oldHistoryStr) {
-                let oldHist = JSON.parse(oldHistoryStr);
-                for(let dateKey in oldHist) {
-                    window.historyLog[dateKey] = oldHist[dateKey];
-                    // Добавили await, чтобы миграция прошла полностью
-                    await saveToCloud('hist_' + dateKey, JSON.stringify(oldHist[dateKey]));
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
+                    document.getElementById('profile-name').innerText = user.first_name || t('profile');
                 }
-                await removeCloudItem('historyLog');
-            }
 
-            const userMacrosStr = await getFromCloud('userMacros');
-            let consumedTodayStr = await getFromCloud('consumedToday');
-            let consumedItemsStr = await getFromCloud('consumedItems');
-            let lastDateStr = await getFromCloud('lastDate');
-            let waterHistoryStr = await getFromCloud('water_history');
-            window.waterHistory = waterHistoryStr ? JSON.parse(waterHistoryStr) : {};
-            const today = getTodayDate();
-
-            let showGreeting = false;
-            let greetingType = '';
-
-            // ГЛАВНОЕ ИСПРАВЛЕНИЕ: Логика смены дня
-            if (lastDateStr && lastDateStr !== today && userMacrosStr) {
-                // 1. Сначала готовим данные вчерашнего дня
-                let pastConsumed = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
-                let pastTarget = JSON.parse(userMacrosStr);
-                let pastItems = consumedItemsStr ? JSON.parse(consumedItemsStr) : [];
-
-                let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
-                window.historyLog[lastDateStr] = dayRecord;
-
-                // 2. 🔥 ЖДЕМ СТРОГОГО ЗАВЕРШЕНИЯ записи в историю
-                // Это гарантирует, что данные не пропадут
-                await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
-
-                if (pastConsumed.cal > 0) {
-                    let pct = pastConsumed.cal / pastTarget.cal;
-                    if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
-                } else { greetingType = 'fail'; }
-                showGreeting = true;
-
-                // 3. Обнуляем счетчики для "сегодня"
-                consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); consumedItemsStr = JSON.stringify([]);
-                await saveToCloud('consumedToday', consumedTodayStr); 
-                await saveToCloud('consumedItems', consumedItemsStr); 
+                // БЕЗОПАСНАЯ загрузка истории
+                const allKeys = await getCloudKeys();
+                const histKeys = allKeys.filter(k => k.startsWith('hist_'));
+                let histValues = {};
+                if (histKeys.length > 0) {
+                    histValues = await getCloudItems(histKeys);
+                }
                 
-                // 4. 🔥 И ТОЛЬКО В САМОМ КОНЦЕ обновляем дату смены дня
-                await saveToCloud('lastDate', today);
-            } else if (!lastDateStr) { 
-                await saveToCloud('lastDate', today); 
+                window.historyLog = {};
+                for(let k in histValues) {
+                    try {
+                        let dateKey = k.replace('hist_', '');
+                        window.historyLog[dateKey] = JSON.parse(histValues[k]);
+                    } catch(e) {}
+                }
+
+                let oldHistoryStr = await getFromCloud('historyLog');
+                if (oldHistoryStr && oldHistoryStr !== 'undefined' && oldHistoryStr !== 'null') {
+                    try {
+                        let oldHist = JSON.parse(oldHistoryStr);
+                        for(let dateKey in oldHist) {
+                            window.historyLog[dateKey] = oldHist[dateKey];
+                            await saveToCloud('hist_' + dateKey, JSON.stringify(oldHist[dateKey]));
+                        }
+                        await removeCloudItem('historyLog');
+                    } catch(e) {}
+                }
+
+                const userMacrosStr = await getFromCloud('userMacros');
+                let consumedTodayStr = await getFromCloud('consumedToday');
+                let consumedItemsStr = await getFromCloud('consumedItems');
+                let lastDateStr = await getFromCloud('lastDate');
+                let waterHistoryStr = await getFromCloud('water_history');
+                
+                window.waterHistory = (waterHistoryStr && waterHistoryStr !== 'undefined') ? JSON.parse(waterHistoryStr) : {};
+                const today = getTodayDate();
+
+                let showGreeting = false;
+                let greetingType = '';
+
+                // БЕЗОПАСНАЯ проверка старых данных (защита от "undefined" строк)
+                if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
+                    let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+                    let pastTarget = JSON.parse(userMacrosStr);
+                    let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
+
+                    let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
+                    window.historyLog[lastDateStr] = dayRecord;
+                    await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
+
+                    if (pastConsumed.cal > 0) {
+                        let pct = pastConsumed.cal / pastTarget.cal;
+                        if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
+                    } else { greetingType = 'fail'; }
+                    showGreeting = true;
+
+                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); consumedItemsStr = JSON.stringify([]);
+                    await saveToCloud('consumedToday', consumedTodayStr); await saveToCloud('consumedItems', consumedItemsStr); await saveToCloud('lastDate', today);
+                } else if (!lastDateStr) { 
+                    await saveToCloud('lastDate', today); 
+                }
+
+                window.userMacros = (userMacrosStr && userMacrosStr !== 'undefined') ? JSON.parse(userMacrosStr) : null;
+                window.consumedToday = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+                window.consumedItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
+
+                document.getElementById('loading-screen').style.display = 'none';
+
+                if (window.userMacros) { 
+                    document.getElementById('bottom-nav').style.display = 'flex'; 
+                    if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('diary-summary'); updateDashboard(); } 
+                    if (showGreeting && !aiName) { triggerMorningGreeting(greetingType); }
+                } else { switchTab('profile'); }
+                
+                updateWaterUI(window.waterHistory[today] || 0);
+                window.currentAppDate = getTodayDate();
+
+            } catch (error) {
+                // 🔥 ЕСЛИ ЧТО-ТО СЛОМАЕТСЯ, ЛОАДЕР ИСЧЕЗНЕТ И ПОКАЖЕТСЯ ОШИБКА
+                document.getElementById('loading-screen').style.display = 'none';
+                tg.showAlert("⚠️ Ошибка загрузки: " + error.message);
+                switchTab('profile'); 
             }
-
-            window.userMacros = userMacrosStr ? JSON.parse(userMacrosStr) : null;
-            window.consumedToday = consumedTodayStr ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
-            window.consumedItems = consumedItemsStr ? JSON.parse(consumedItemsStr) : [];
-
-            document.getElementById('loading-screen').style.display = 'none';
-
-            if (window.userMacros) { 
-                document.getElementById('bottom-nav').style.display = 'flex'; 
-                if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('diary-summary'); updateDashboard(); } 
-                if (showGreeting && !aiName) { triggerMorningGreeting(greetingType); }
-            } else { switchTab('profile'); }
-            
-            updateWaterUI(window.waterHistory[today] || 0);
-            window.currentAppDate = getTodayDate();
         };
 
         function triggerMorningGreeting(type) {
