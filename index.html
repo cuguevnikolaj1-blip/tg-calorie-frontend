@@ -482,11 +482,26 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        function getCloudKeys() { return new Promise((r) => tg.CloudStorage.getKeys((err, keys) => r(keys || []))); }
-        function getCloudItems(keys) { return new Promise((r) => tg.CloudStorage.getItems(keys, (err, vals) => r(vals || {}))); }
-        function removeCloudItem(key) { return new Promise((r) => tg.CloudStorage.removeItem(key, (err, ok) => r(ok))); }
-        function saveToCloud(key, value) { return new Promise((r) => tg.CloudStorage.setItem(key, value, () => r(true))); }
-        function getFromCloud(key) { return new Promise((r) => tg.CloudStorage.getItem(key, (err, val) => r(val))); }
+        // 🔥 БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА С ТАЙМАУТОМ И ЗАДЕРЖКОЙ
+        const cloudTimeout = (ms) => new Promise((resolve) => setTimeout(() => resolve(null), ms));
+        const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+        function getCloudKeys() { 
+            return Promise.race([ new Promise(r => tg.CloudStorage.getKeys((err, keys) => r(keys || []))), cloudTimeout(2500) ]); 
+        }
+        function getCloudItems(keys) { 
+            return Promise.race([ new Promise(r => tg.CloudStorage.getItems(keys, (err, vals) => r(vals || {}))), cloudTimeout(2500) ]); 
+        }
+        function removeCloudItem(key) { 
+            return Promise.race([ new Promise(r => tg.CloudStorage.removeItem(key, (err, ok) => r(ok))), cloudTimeout(2500) ]); 
+        }
+        async function saveToCloud(key, value) { 
+            await delay(150); // Спасает Айфон от блокировки (лимит Телеграма: 1 запись/сек)
+            return Promise.race([ new Promise(r => tg.CloudStorage.setItem(key, value, (err, ok) => r(!err))), cloudTimeout(2500) ]); 
+        }
+        function getFromCloud(key) { 
+            return Promise.race([ new Promise(r => tg.CloudStorage.getItem(key, (err, val) => r(err ? null : val))), cloudTimeout(2500) ]); 
+        }
 
         function getFormattedDate(dateObj) {
             const d = String(dateObj.getDate()).padStart(2, '0');
@@ -498,7 +513,6 @@
 
         async function syncSettingsWithServer(notifyVal) {
             if (tg.initDataUnsafe?.user?.id) {
-                // Передаем точное смещение в МИНУТАХ
                 const tzOffset = -new Date().getTimezoneOffset(); 
                 try {
                     await fetch(API_BASE_URL + '/settings', {
@@ -510,8 +524,6 @@
             }
         }
 
-        // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ window.onload
-        // Добавили async, чтобы await внутри работали правильно
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
@@ -533,12 +545,11 @@
                     document.getElementById('profile-name').innerText = user.first_name || t('profile');
                 }
 
-                // БЕЗОПАСНАЯ загрузка истории
                 const allKeys = await getCloudKeys();
-                const histKeys = allKeys.filter(k => k.startsWith('hist_'));
+                const histKeys = (allKeys || []).filter(k => k && k.startsWith('hist_'));
                 let histValues = {};
                 if (histKeys.length > 0) {
-                    histValues = await getCloudItems(histKeys);
+                    histValues = await getCloudItems(histKeys) || {};
                 }
                 
                 window.historyLog = {};
@@ -573,7 +584,6 @@
                 let showGreeting = false;
                 let greetingType = '';
 
-                // БЕЗОПАСНАЯ проверка старых данных (защита от "undefined" строк)
                 if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
                     let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
                     let pastTarget = JSON.parse(userMacrosStr);
@@ -581,6 +591,8 @@
 
                     let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                     window.historyLog[lastDateStr] = dayRecord;
+                    
+                    // Сохраняем с задержками, чтобы не злить Айфон
                     await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
                     if (pastConsumed.cal > 0) {
@@ -589,8 +601,11 @@
                     } else { greetingType = 'fail'; }
                     showGreeting = true;
 
-                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); consumedItemsStr = JSON.stringify([]);
-                    await saveToCloud('consumedToday', consumedTodayStr); await saveToCloud('consumedItems', consumedItemsStr); await saveToCloud('lastDate', today);
+                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
+                    consumedItemsStr = JSON.stringify([]);
+                    await saveToCloud('consumedToday', consumedTodayStr); 
+                    await saveToCloud('consumedItems', consumedItemsStr); 
+                    await saveToCloud('lastDate', today);
                 } else if (!lastDateStr) { 
                     await saveToCloud('lastDate', today); 
                 }
@@ -611,32 +626,11 @@
                 window.currentAppDate = getTodayDate();
 
             } catch (error) {
-                // 🔥 ЕСЛИ ЧТО-ТО СЛОМАЕТСЯ, ЛОАДЕР ИСЧЕЗНЕТ И ПОКАЖЕТСЯ ОШИБКА
                 document.getElementById('loading-screen').style.display = 'none';
-                tg.showAlert("⚠️ Ошибка загрузки: " + error.message);
+                tg.showAlert("⚠️ Ошибка: " + error.message);
                 switchTab('profile'); 
             }
         };
-
-        function triggerMorningGreeting(type) {
-            const modal = document.getElementById('greeting-modal');
-            const icon = document.getElementById('greeting-icon');
-            const title = document.getElementById('greeting-title');
-            const text = document.getElementById('greeting-text');
-            let currentStreak = calculateStreak(); 
-
-            if (type === 'success') {
-                icon.innerHTML = '🔥';
-                title.innerText = t('greet_ok_title');
-                text.innerText = t('greet_ok_text').replace('{s}', currentStreak);
-                if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            } else {
-                icon.innerHTML = '🌱';
-                title.innerText = t('greet_fail_title');
-                text.innerText = t('greet_fail_text');
-            }
-            modal.style.display = 'flex';
-        }
 
         function closeGreeting() { document.getElementById('greeting-modal').style.display = 'none'; }
 
