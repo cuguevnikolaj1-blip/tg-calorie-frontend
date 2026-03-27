@@ -482,25 +482,45 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА С ТАЙМАУТОМ И ЗАДЕРЖКОЙ
-        const cloudTimeout = (ms) => new Promise((resolve) => setTimeout(() => resolve(null), ms));
+        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (ОДИН ЗАПРОС)
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-        function getCloudKeys() { 
-            return Promise.race([ new Promise(r => tg.CloudStorage.getKeys((err, keys) => r(keys || []))), cloudTimeout(2500) ]); 
+        function getCloudKeys() {
+            return new Promise((resolve) => {
+                let handled = false;
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve([]); } }, 3000);
+                try { tg.CloudStorage.getKeys((err, keys) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? [] : (keys || [])); } }); }
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve([]); } }
+            });
         }
-        function getCloudItems(keys) { 
-            return Promise.race([ new Promise(r => tg.CloudStorage.getItems(keys, (err, vals) => r(vals || {}))), cloudTimeout(2500) ]); 
+
+        function getCloudItems(keysArray) {
+            return new Promise((resolve) => {
+                if (!keysArray || keysArray.length === 0) return resolve({});
+                let handled = false;
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve({}); } }, 4000);
+                try { tg.CloudStorage.getItems(keysArray, (err, vals) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? {} : (vals || {})); } }); }
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve({}); } }
+            });
         }
-        function removeCloudItem(key) { 
-            return Promise.race([ new Promise(r => tg.CloudStorage.removeItem(key, (err, ok) => r(ok))), cloudTimeout(2500) ]); 
+
+        function removeCloudItem(key) {
+            return new Promise((resolve) => {
+                let handled = false;
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 3000);
+                try { tg.CloudStorage.removeItem(key, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
+            });
         }
-        async function saveToCloud(key, value) { 
-            await delay(150); // Спасает Айфон от блокировки (лимит Телеграма: 1 запись/сек)
-            return Promise.race([ new Promise(r => tg.CloudStorage.setItem(key, value, (err, ok) => r(!err))), cloudTimeout(2500) ]); 
-        }
-        function getFromCloud(key) { 
-            return Promise.race([ new Promise(r => tg.CloudStorage.getItem(key, (err, val) => r(err ? null : val))), cloudTimeout(2500) ]); 
+
+        async function saveToCloud(key, value) {
+            await delay(200); // Жесткая пауза 200мс между сохранениями для защиты iOS
+            return new Promise((resolve) => {
+                let handled = false;
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 3000);
+                try { tg.CloudStorage.setItem(key, value, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
+            });
         }
 
         function getFormattedDate(dateObj) {
@@ -528,13 +548,23 @@
             document.getElementById('loading-screen').style.display = 'block';
 
             try {
-                let urlLang = urlParams.get('lang'); let savedLang = await getFromCloud('userLang');
-                if (urlLang && i18n[urlLang]) { currLang = urlLang; await saveToCloud('userLang', currLang); } 
+                // 🔥 1. БЕРЕМ ВСЕ КЛЮЧИ ОДНИМ ЗАПРОСОМ (СКОРОСТЬ x10)
+                const allKeys = await getCloudKeys();
+                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog'];
+                const histKeys = (allKeys || []).filter(k => k && k.startsWith('hist_'));
+                const keysToFetch = [...coreKeys, ...histKeys];
+
+                const cloudData = await getCloudItems(keysToFetch);
+
+                // Настройки профиля
+                let urlLang = urlParams.get('lang'); 
+                let savedLang = cloudData['userLang'];
+                if (urlLang && i18n[urlLang] && urlLang !== savedLang) { currLang = urlLang; saveToCloud('userLang', currLang); } 
                 else if (savedLang) { currLang = savedLang; } 
                 else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
                 applyTranslations(); 
 
-                let notifyPref = await getFromCloud('notifyPref') || '1';
+                let notifyPref = cloudData['notifyPref'] || '1';
                 document.getElementById('notify').value = notifyPref;
                 document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
                 syncSettingsWithServer(notifyPref);
@@ -545,22 +575,17 @@
                     document.getElementById('profile-name').innerText = user.first_name || t('profile');
                 }
 
-                const allKeys = await getCloudKeys();
-                const histKeys = (allKeys || []).filter(k => k && k.startsWith('hist_'));
-                let histValues = {};
-                if (histKeys.length > 0) {
-                    histValues = await getCloudItems(histKeys) || {};
-                }
-                
+                // Сборка истории
                 window.historyLog = {};
-                for(let k in histValues) {
+                for(let k of histKeys) {
                     try {
                         let dateKey = k.replace('hist_', '');
-                        window.historyLog[dateKey] = JSON.parse(histValues[k]);
+                        if (cloudData[k]) window.historyLog[dateKey] = JSON.parse(cloudData[k]);
                     } catch(e) {}
                 }
 
-                let oldHistoryStr = await getFromCloud('historyLog');
+                // Миграция старой базы (если осталась)
+                let oldHistoryStr = cloudData['historyLog'];
                 if (oldHistoryStr && oldHistoryStr !== 'undefined' && oldHistoryStr !== 'null') {
                     try {
                         let oldHist = JSON.parse(oldHistoryStr);
@@ -572,11 +597,11 @@
                     } catch(e) {}
                 }
 
-                const userMacrosStr = await getFromCloud('userMacros');
-                let consumedTodayStr = await getFromCloud('consumedToday');
-                let consumedItemsStr = await getFromCloud('consumedItems');
-                let lastDateStr = await getFromCloud('lastDate');
-                let waterHistoryStr = await getFromCloud('water_history');
+                const userMacrosStr = cloudData['userMacros'];
+                let consumedTodayStr = cloudData['consumedToday'];
+                let consumedItemsStr = cloudData['consumedItems'];
+                let lastDateStr = cloudData['lastDate'];
+                let waterHistoryStr = cloudData['water_history'];
                 
                 window.waterHistory = (waterHistoryStr && waterHistoryStr !== 'undefined') ? JSON.parse(waterHistoryStr) : {};
                 const today = getTodayDate();
@@ -584,6 +609,7 @@
                 let showGreeting = false;
                 let greetingType = '';
 
+                // 🔥 2. БЕЗОПАСНАЯ СМЕНА ДНЯ
                 if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
                     let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
                     let pastTarget = JSON.parse(userMacrosStr);
@@ -592,20 +618,23 @@
                     let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                     window.historyLog[lastDateStr] = dayRecord;
                     
-                    // Сохраняем с задержками, чтобы не злить Айфон
-                    await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
+                    // СОХРАНЯЕМ ВЧЕРА И ЖДЕМ ОТВЕТА
+                    let saveSuccess = await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
                     if (pastConsumed.cal > 0) {
                         let pct = pastConsumed.cal / pastTarget.cal;
                         if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
                     } else { greetingType = 'fail'; }
-                    showGreeting = true;
-
-                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
-                    consumedItemsStr = JSON.stringify([]);
-                    await saveToCloud('consumedToday', consumedTodayStr); 
-                    await saveToCloud('consumedItems', consumedItemsStr); 
-                    await saveToCloud('lastDate', today);
+                    
+                    // ТОЛЬКО ЕСЛИ ВЧЕРА УСПЕШНО СОХРАНИЛОСЬ — ОБНУЛЯЕМ СЕГОДНЯ
+                    if (saveSuccess) {
+                        showGreeting = true;
+                        consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
+                        consumedItemsStr = JSON.stringify([]);
+                        await saveToCloud('consumedToday', consumedTodayStr); 
+                        await saveToCloud('consumedItems', consumedItemsStr); 
+                        await saveToCloud('lastDate', today);
+                    }
                 } else if (!lastDateStr) { 
                     await saveToCloud('lastDate', today); 
                 }
