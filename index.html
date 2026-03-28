@@ -92,6 +92,9 @@
         .calendar-day.status-red { box-shadow: inset 0 0 0 2.5px #FF3B30; background: rgba(255,255,255,0.8); font-weight: 600; }
         .calendar-day.status-yellow { box-shadow: inset 0 0 0 2.5px #FFCC00; background: rgba(255,255,255,0.8); font-weight: 600; }
         .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); border: none; }
+        
+        /* 🔥 Подсветка сегодняшнего дня */
+        .calendar-day.is-today { font-weight: 700; color: var(--macro-protein); box-shadow: inset 0 0 0 2px rgba(138, 43, 226, 0.2); }
 
         details { width: 100%; }
         summary { font-size: 15px; color: var(--macro-protein); cursor: pointer; font-weight: 600; outline: none; margin-top: 15px; list-style: none; display: flex; align-items: center; gap: 5px; }
@@ -116,7 +119,7 @@
         .lang-toggle[data-active="es"] .lang-toggle-thumb { transform: translateX(200%); }
         .lang-toggle[data-active="zh"] .lang-toggle-thumb { transform: translateX(300%); }
 
-/* 🔥 СТИЛИ ДЛЯ ТУМБЛЕРА УВЕДОМЛЕНИЙ */
+        /* 🔥 СТИЛИ ДЛЯ ТУМБЛЕРА УВЕДОМЛЕНИЙ */
         .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
         .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
@@ -396,7 +399,7 @@
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
-                protein: "蛋白质", fats: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
+                protein: "蛋白质", 测试: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
                 water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？",
                 btn_photo: "拍照 (点击 📎)", btn_gallery: "从相册选择",
                 history: "我的历史记录", empty_history: "还没吃任何东西",
@@ -463,7 +466,6 @@
                 document.getElementById('notifyToggle').setAttribute('data-active', val);
                 document.getElementById('notify').value = val;
                 
-                // Моментальное сохранение в облако и на сервер!
                 await saveToCloud('notifyPref', val);
                 syncSettingsWithServer(val);
             });
@@ -482,13 +484,13 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (ОДИН ЗАПРОС)
+        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (ТАЙМАУТ 8 СЕКУНД)
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
         function getCloudKeys() {
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve([]); } }, 3000);
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve([]); } }, 8000); // 8 секунд
                 try { tg.CloudStorage.getKeys((err, keys) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? [] : (keys || [])); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve([]); } }
             });
@@ -498,7 +500,7 @@
             return new Promise((resolve) => {
                 if (!keysArray || keysArray.length === 0) return resolve({});
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve({}); } }, 4000);
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve({}); } }, 8000); // 8 секунд
                 try { tg.CloudStorage.getItems(keysArray, (err, vals) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? {} : (vals || {})); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve({}); } }
             });
@@ -507,7 +509,7 @@
         function removeCloudItem(key) {
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 3000);
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); // 8 секунд
                 try { tg.CloudStorage.removeItem(key, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
@@ -517,7 +519,7 @@
             await delay(200); // Жесткая пауза 200мс между сохранениями для защиты iOS
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 3000);
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); // 8 секунд
                 try { tg.CloudStorage.setItem(key, value, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
@@ -548,13 +550,18 @@
             document.getElementById('loading-screen').style.display = 'block';
 
             try {
-                // 🔥 1. БЕРЕМ ВСЕ КЛЮЧИ ОДНИМ ЗАПРОСОМ (СКОРОСТЬ x10)
+                // 🔥 1. БЕРЕМ ВСЕ КЛЮЧИ ОДНИМ ЗАПРОСОМ 
                 const allKeys = await getCloudKeys();
                 const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog'];
                 const histKeys = (allKeys || []).filter(k => k && k.startsWith('hist_'));
                 const keysToFetch = [...coreKeys, ...histKeys];
 
                 const cloudData = await getCloudItems(keysToFetch);
+
+                // 🔥 БРОНЕЖИЛЕТ ОТ ТАЙМАУТОВ И ПОТЕРИ ДАННЫХ
+                if (allKeys && allKeys.length > 0 && Object.keys(cloudData).length === 0) {
+                    throw new Error("Облако Телеграма временно не отвечает. Пожалуйста, закрой и открой дневник заново!");
+                }
 
                 // Настройки профиля
                 let urlLang = urlParams.get('lang'); 
@@ -621,7 +628,6 @@
                     // Отправляем историю в облако (без блокировки смены дня)
                     await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
-                    // Вычисляем статус для утренней заставки
                     if (pastConsumed.cal > 0) {
                         let pct = pastConsumed.cal / pastTarget.cal;
                         if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
@@ -656,12 +662,30 @@
 
             } catch (error) {
                 document.getElementById('loading-screen').style.display = 'none';
-                tg.showAlert("⚠️ Ошибка: " + error.message);
+                tg.showAlert("⚠️ " + error.message);
                 switchTab('profile'); 
             }
         };
 
         function closeGreeting() { document.getElementById('greeting-modal').style.display = 'none'; }
+        
+        function triggerMorningGreeting(type) {
+            let streak = calculateStreak();
+            let title = '', text = '';
+            
+            if (type === 'success') {
+                title = t('greet_ok_title');
+                text = t('greet_ok_text').replace('{s}', streak);
+            } else {
+                title = t('greet_fail_title');
+                text = t('greet_fail_text');
+            }
+            
+            document.getElementById('greeting-title').innerText = title;
+            document.getElementById('greeting-text').innerText = text;
+            document.getElementById('greeting-modal').style.display = 'flex';
+            if (typeof confetti === 'function' && type === 'success') { setTimeout(() => { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }, 200); }
+        }
 
         function switchTab(tabName) {
             if (window.currentAppDate && window.currentAppDate !== getTodayDate()) { window.location.reload(); return; }
@@ -881,6 +905,9 @@
                 } else if (hasWater) {
                     el.classList.add('has-data');
                 }
+                
+                // 🔥 Подсветка "сегодня"
+                if (dateStr === getTodayDate() && !statusClass) el.classList.add('is-today');
 
                 if(dateStr === selectedDateStr) el.classList.add('selected');
 
