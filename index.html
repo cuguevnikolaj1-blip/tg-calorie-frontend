@@ -93,7 +93,6 @@
         .calendar-day.status-yellow { box-shadow: inset 0 0 0 2.5px #FFCC00; background: rgba(255,255,255,0.8); font-weight: 600; }
         .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); border: none; }
         
-        /* 🔥 Подсветка сегодняшнего дня */
         .calendar-day.is-today { font-weight: 700; color: var(--macro-protein); box-shadow: inset 0 0 0 2px rgba(138, 43, 226, 0.2); }
 
         details { width: 100%; }
@@ -119,7 +118,6 @@
         .lang-toggle[data-active="es"] .lang-toggle-thumb { transform: translateX(200%); }
         .lang-toggle[data-active="zh"] .lang-toggle-thumb { transform: translateX(300%); }
 
-        /* 🔥 СТИЛИ ДЛЯ ТУМБЛЕРА УВЕДОМЛЕНИЙ */
         .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
         .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
@@ -484,42 +482,54 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (ТАЙМАУТ 8 СЕКУНД)
+        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (С ВЫБРОСОМ ОШИБОК)
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
         function getCloudKeys() {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve([]); } }, 8000); // 8 секунд
-                try { tg.CloudStorage.getKeys((err, keys) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? [] : (keys || [])); } }); }
-                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve([]); } }
+                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Cloud keys connection timeout")); } }, 10000); 
+                try { 
+                    tg.CloudStorage.getKeys((err, keys) => { 
+                        if(!handled) { 
+                            handled=true; clearTimeout(t); 
+                            if(err) reject(new Error(err)); else resolve(keys || []); 
+                        } 
+                    }); 
+                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } } 
             });
         }
 
         function getCloudItems(keysArray) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 if (!keysArray || keysArray.length === 0) return resolve({});
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve({}); } }, 8000); // 8 секунд
-                try { tg.CloudStorage.getItems(keysArray, (err, vals) => { if(!handled) { handled=true; clearTimeout(t); resolve(err ? {} : (vals || {})); } }); }
-                catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve({}); } }
+                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Cloud items connection timeout")); } }, 10000); 
+                try { 
+                    tg.CloudStorage.getItems(keysArray, (err, vals) => { 
+                        if(!handled) { 
+                            handled=true; clearTimeout(t); 
+                            if(err) reject(new Error(err)); else resolve(vals || {}); 
+                        } 
+                    }); 
+                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } }
             });
         }
 
         function removeCloudItem(key) {
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); // 8 секунд
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); 
                 try { tg.CloudStorage.removeItem(key, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
         }
 
         async function saveToCloud(key, value) {
-            await delay(200); // Жесткая пауза 200мс между сохранениями для защиты iOS
+            await delay(200); 
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); // 8 секунд
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); 
                 try { tg.CloudStorage.setItem(key, value, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
@@ -549,122 +559,153 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
+            let cloudData = {};
+            let allKeys = [];
+            
             try {
-                // 🔥 1. БЕРЕМ ВСЕ КЛЮЧИ ОДНИМ ЗАПРОСОМ 
-                const allKeys = await getCloudKeys();
-                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog'];
-                const histKeys = (allKeys || []).filter(k => k && k.startsWith('hist_'));
-                const keysToFetch = [...coreKeys, ...histKeys];
+                // 🔥 1. Надежно получаем ключи. При ошибке - останавливаем загрузку, защищая базу.
+                allKeys = await getCloudKeys().catch(e => []);
 
-                const cloudData = await getCloudItems(keysToFetch);
+                // 🔥 2. Добавлен ключ hist_dates (реестр дней) для обхода пустого списка getKeys()
+                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog', 'hist_dates'];
+                const coreData = await getCloudItems(coreKeys);
 
-                // 🔥 БРОНЕЖИЛЕТ ОТ ТАЙМАУТОВ И ПОТЕРИ ДАННЫХ
-                if (allKeys && allKeys.length > 0 && Object.keys(cloudData).length === 0) {
-                    throw new Error("Облако Телеграма временно не отвечает. Пожалуйста, закрой и открой дневник заново!");
-                }
+                // 🔥 3. Собираем список файлов истории из Реестра + ключей облака
+                let histDatesFromIndex = [];
+                try { if (coreData['hist_dates']) histDatesFromIndex = JSON.parse(coreData['hist_dates']); } catch(e) {}
 
-                // Настройки профиля
-                let urlLang = urlParams.get('lang'); 
-                let savedLang = cloudData['userLang'];
-                if (urlLang && i18n[urlLang] && urlLang !== savedLang) { currLang = urlLang; saveToCloud('userLang', currLang); } 
-                else if (savedLang) { currLang = savedLang; } 
-                else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
-                applyTranslations(); 
+                const histMetaKeysFromIndex = histDatesFromIndex.map(d => 'hist_' + d);
+                const histItemKeysFromIndex = histDatesFromIndex.map(d => 'hist_items_' + d);
 
-                let notifyPref = cloudData['notifyPref'] || '1';
-                document.getElementById('notify').value = notifyPref;
-                document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
-                syncSettingsWithServer(notifyPref);
+                const excludeKeys = ['hist_dates', 'historyLog'];
+                const histMetaKeysFromCloud = (allKeys || []).filter(k => k && k.startsWith('hist_') && !k.startsWith('hist_items_') && !excludeKeys.includes(k));
+                const histItemKeysFromCloud = (allKeys || []).filter(k => k && k.startsWith('hist_items_'));
 
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
-                    document.getElementById('profile-name').innerText = user.first_name || t('profile');
-                }
-
-                // Сборка истории
-                window.historyLog = {};
-                for(let k of histKeys) {
-                    try {
-                        let dateKey = k.replace('hist_', '');
-                        if (cloudData[k]) window.historyLog[dateKey] = JSON.parse(cloudData[k]);
-                    } catch(e) {}
-                }
-
-                // Миграция старой базы (если осталась)
-                let oldHistoryStr = cloudData['historyLog'];
-                if (oldHistoryStr && oldHistoryStr !== 'undefined' && oldHistoryStr !== 'null') {
-                    try {
-                        let oldHist = JSON.parse(oldHistoryStr);
-                        for(let dateKey in oldHist) {
-                            window.historyLog[dateKey] = oldHist[dateKey];
-                            await saveToCloud('hist_' + dateKey, JSON.stringify(oldHist[dateKey]));
-                        }
-                        await removeCloudItem('historyLog');
-                    } catch(e) {}
-                }
-
-                const userMacrosStr = cloudData['userMacros'];
-                let consumedTodayStr = cloudData['consumedToday'];
-                let consumedItemsStr = cloudData['consumedItems'];
-                let lastDateStr = cloudData['lastDate'];
-                let waterHistoryStr = cloudData['water_history'];
+                const histMetaKeys = [...new Set([...histMetaKeysFromIndex, ...histMetaKeysFromCloud])];
+                const histItemKeys = [...new Set([...histItemKeysFromIndex, ...histItemKeysFromCloud])];
                 
-                window.waterHistory = (waterHistoryStr && waterHistoryStr !== 'undefined') ? JSON.parse(waterHistoryStr) : {};
-                const today = getTodayDate();
+                const keysToFetch = [...histMetaKeys, ...histItemKeys];
+                const histData = keysToFetch.length > 0 ? await getCloudItems(keysToFetch) : {};
+                
+                cloudData = { ...coreData, ...histData };
 
-                let showGreeting = false;
-                let greetingType = '';
+            } catch (connectionError) {
+                // КРИТИЧЕСКАЯ ОШИБКА: Считаем это потерей связи, останавливаем запуск
+                document.getElementById('loading-screen').style.display = 'none';
+                tg.showAlert("⚠️ Ошибка подключения к облаку Telegram! Мы остановили загрузку, чтобы защитить ваши данные. Пожалуйста, перезапустите приложение.");
+                return; 
+            }
 
-                // 🔥 2. БЕЗОПАСНАЯ СМЕНА ДНЯ (БЕЗ БЛОКИРОВОК)
-                if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
-                    let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
-                    let pastTarget = JSON.parse(userMacrosStr);
-                    let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
+            // Настройки профиля
+            let urlLang = urlParams.get('lang'); 
+            let savedLang = cloudData['userLang'];
+            if (urlLang && i18n[urlLang] && urlLang !== savedLang) { currLang = urlLang; saveToCloud('userLang', currLang); } 
+            else if (savedLang) { currLang = savedLang; } 
+            else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
+            applyTranslations(); 
 
-                    let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
+            let notifyPref = cloudData['notifyPref'] || '1';
+            document.getElementById('notify').value = notifyPref;
+            document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
+            syncSettingsWithServer(notifyPref);
+
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
+                document.getElementById('profile-name').innerText = user.first_name || t('profile');
+            }
+
+            // 🔥 4. Новая сборка истории (Сшиваем Метаданные и Списки блюд)
+            window.historyLog = {};
+            const histMetaKeys = Object.keys(cloudData).filter(k => k.startsWith('hist_') && !k.startsWith('hist_items_') && k !== 'hist_dates' && k !== 'historyLog');
+            
+            for(let k of histMetaKeys) {
+                try {
+                    let dateKey = k.replace('hist_', '');
+                    if (cloudData[k]) {
+                        let meta = JSON.parse(cloudData[k]);
+                        let items = [];
+                        try {
+                            if (cloudData['hist_items_' + dateKey]) {
+                                items = JSON.parse(cloudData['hist_items_' + dateKey]);
+                            }
+                        } catch(e) {}
+                        window.historyLog[dateKey] = { ...meta, items };
+                    }
+                } catch(e) {}
+            }
+
+            const userMacrosStr = cloudData['userMacros'];
+            let consumedTodayStr = cloudData['consumedToday'];
+            let consumedItemsStr = cloudData['consumedItems'];
+            let lastDateStr = cloudData['lastDate'];
+            let waterHistoryStr = cloudData['water_history'];
+            
+            window.waterHistory = (waterHistoryStr && waterHistoryStr !== 'undefined') ? JSON.parse(waterHistoryStr) : {};
+            const today = getTodayDate();
+
+            let showGreeting = false;
+            let greetingType = '';
+
+            // 🔥 5. БЕЗОПАСНАЯ СМЕНА ДНЯ С ПРОВЕРКОЙ СОХРАНЕНИЯ
+            if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
+                let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+                let pastTarget = JSON.parse(userMacrosStr);
+                let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
+
+                let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
+                let dayMeta = { consumed: pastConsumed, target: pastTarget };
+                
+                // Обновляем реестр дат
+                let histDates = [];
+                try { if (cloudData['hist_dates']) histDates = JSON.parse(cloudData['hist_dates']); } catch(e) {}
+                
+                if (!histDates.includes(lastDateStr)) {
+                    histDates.push(lastDateStr);
+                    await saveToCloud('hist_dates', JSON.stringify(histDates));
+                }
+
+                // Разделяем сохранение, чтобы обойти лимит 4096 символов Telegram CloudStorage
+                const metaSaved = await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayMeta));
+                await saveToCloud('hist_items_' + lastDateStr, JSON.stringify(pastItems));
+
+                if (metaSaved) {
                     window.historyLog[lastDateStr] = dayRecord;
-                    
-                    // Отправляем историю в облако (без блокировки смены дня)
-                    await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayRecord));
 
                     if (pastConsumed.cal > 0) {
                         let pct = pastConsumed.cal / pastTarget.cal;
                         if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
                     } else { greetingType = 'fail'; }
                     
-                    // 🔥 ВСЕГДА ПЕРЕХОДИМ В НОВЫЙ ДЕНЬ
                     showGreeting = true;
                     consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
                     consumedItemsStr = JSON.stringify([]);
                     
+                    await saveToCloud('lastDate', today);
                     await saveToCloud('consumedToday', consumedTodayStr); 
                     await saveToCloud('consumedItems', consumedItemsStr); 
-                    await saveToCloud('lastDate', today);
-                } else if (!lastDateStr) { 
-                    await saveToCloud('lastDate', today); 
+                } else {
+                    console.error('Критическая ошибка: не удалось сохранить историю за', lastDateStr);
+                    tg.showAlert('⚠️ Не удалось сохранить историю за вчера. Попробуй закрыть и открыть приложение заново.');
                 }
-
-                window.userMacros = (userMacrosStr && userMacrosStr !== 'undefined') ? JSON.parse(userMacrosStr) : null;
-                window.consumedToday = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
-                window.consumedItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
-
-                document.getElementById('loading-screen').style.display = 'none';
-
-                if (window.userMacros) { 
-                    document.getElementById('bottom-nav').style.display = 'flex'; 
-                    if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('diary-summary'); updateDashboard(); } 
-                    if (showGreeting && !aiName) { triggerMorningGreeting(greetingType); }
-                } else { switchTab('profile'); }
-                
-                updateWaterUI(window.waterHistory[today] || 0);
-                window.currentAppDate = getTodayDate();
-
-            } catch (error) {
-                document.getElementById('loading-screen').style.display = 'none';
-                tg.showAlert("⚠️ " + error.message);
-                switchTab('profile'); 
+            } else if (!lastDateStr) { 
+                await saveToCloud('lastDate', today); 
             }
+
+            window.userMacros = (userMacrosStr && userMacrosStr !== 'undefined') ? JSON.parse(userMacrosStr) : null;
+            window.consumedToday = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+            window.consumedItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
+
+            document.getElementById('loading-screen').style.display = 'none';
+
+            if (window.userMacros) { 
+                document.getElementById('bottom-nav').style.display = 'flex'; 
+                if (aiName && aiCal > 0) { renderSandbox(); } else { switchTab('diary-summary'); updateDashboard(); } 
+                if (showGreeting && !aiName) { triggerMorningGreeting(greetingType); }
+            } else { switchTab('profile'); }
+            
+            updateWaterUI(window.waterHistory[today] || 0);
+            window.currentAppDate = getTodayDate();
         };
 
         function closeGreeting() { document.getElementById('greeting-modal').style.display = 'none'; }
