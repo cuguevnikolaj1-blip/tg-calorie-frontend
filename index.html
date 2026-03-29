@@ -432,6 +432,7 @@
         });
 
         window.userMacros = null; window.consumedToday = null; window.consumedItems = []; window.waterHistory = {}; 
+        window.loggedDates = []; // 🔥 Реестр дней с едой для календаря
 
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
@@ -489,12 +490,18 @@
             document.getElementById('loading-screen').style.display = 'block';
 
             try {
-                // ЛЕГКАЯ ЗАГРУЗКА: только базовые ключи
-                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history'];
+                // 🔥 Генерируем ключи за последние 60 дней для безопасной миграции (БЕЗ getKeys!)
+                let potentialOldKeys = [];
+                let tempD = new Date();
+                for(let i=0; i<60; i++) {
+                    let d = new Date(tempD); d.setDate(tempD.getDate() - i);
+                    potentialOldKeys.push('hist_' + getFormattedDate(d));
+                }
+
+                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates'];
                 let cloudData = {};
                 
-                // Пробуем получить данные (без жестких крашей для стабильности базовой версии)
-                try { cloudData = await getCloudItems(coreKeys); } catch(e) {}
+                try { cloudData = await getCloudItems([...coreKeys, ...potentialOldKeys]); } catch(e) {}
 
                 // Профиль и локализация
                 let urlLang = urlParams.get('lang'); 
@@ -515,6 +522,36 @@
                     document.getElementById('profile-name').innerText = user.first_name || t('profile');
                 }
 
+                window.loggedDates = cloudData['logged_dates'] ? JSON.parse(cloudData['logged_dates']) : [];
+
+                // 🔥 ТИХАЯ МИГРАЦИЯ: Конвертируем старую историю без getKeys!
+                let migratedAny = false;
+                for (let k of potentialOldKeys) {
+                    if (cloudData[k] && cloudData[k] !== 'undefined') {
+                        try {
+                            let dateKey = k.replace('hist_', '');
+                            let record = JSON.parse(cloudData[k]);
+                            let meta = JSON.stringify({ consumed: record.consumed, target: record.target });
+                            let items = JSON.stringify(record.items || []);
+                            
+                            await saveToCloud('hist_meta_' + dateKey, meta);
+                            await saveToCloud('hist_items_' + dateKey, items);
+                            
+                            // Удаляем старый тяжелый ключ
+                            tg.CloudStorage.removeItem(k, () => {});
+                            
+                            // Заносим дату в календарь
+                            if (!window.loggedDates.includes(dateKey)) {
+                                window.loggedDates.push(dateKey);
+                            }
+                            migratedAny = true;
+                        } catch(e) {}
+                    }
+                }
+                if (migratedAny) {
+                    await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                }
+
                 // Загрузка текущих данных
                 const userMacrosStr = cloudData['userMacros'];
                 let consumedTodayStr = cloudData['consumedToday'];
@@ -531,10 +568,15 @@
                     let pastTarget = userMacrosStr;
                     let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? consumedItemsStr : "[]";
 
-                    // Сохраняем вчерашний день безопасно, разделяя мету и блюда (чтобы избежать лимита 4096 символов)
                     let dayMeta = JSON.stringify({ consumed: JSON.parse(pastConsumed), target: JSON.parse(pastTarget) });
                     await saveToCloud('hist_meta_' + lastDateStr, dayMeta);
                     await saveToCloud('hist_items_' + lastDateStr, pastItems);
+
+                    // 🔥 Сохраняем отметку в календаре
+                    if (!window.loggedDates.includes(lastDateStr)) {
+                        window.loggedDates.push(lastDateStr);
+                        await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                    }
 
                     // Обнуляем сегодняшний день
                     consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
@@ -723,7 +765,9 @@
                 const el = document.createElement('div'); el.className = 'calendar-day'; el.innerText = d;
 
                 let hasWater = waterHistory[dateStr] > 0;
-                if (hasWater) { el.classList.add('has-data'); }
+                let hasFood = window.loggedDates.includes(dateStr); // 🔥 Подсветка прошлых дней из реестра
+                
+                if (hasWater || hasFood) { el.classList.add('has-data'); }
                 
                 if (dateStr === getTodayDate()) el.classList.add('is-today');
                 if (dateStr === selectedDateStr) el.classList.add('selected');
@@ -738,7 +782,6 @@
             renderCalendar();
         }
 
-        // Загрузка деталей выбранного дня (подгружаем данные из облака только при клике)
         async function renderSelectedDay() {
             const container = document.getElementById('selected-day-details');
             container.innerHTML = `<div style="text-align: center; margin-top: 30px;"><i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 24px; color: var(--macro-protein);"></i></div>`;
@@ -751,12 +794,11 @@
                 isToday = true; 
                 if (window.consumedToday && window.userMacros) { dayData = { consumed: window.consumedToday, target: window.userMacros, items: window.consumedItems }; } 
             } else {
-                // Подгружаем историю из облака только для конкретного дня
                 try {
                     const pastData = await getCloudItems(['hist_meta_' + selectedDateStr, 'hist_items_' + selectedDateStr]);
-                    if (pastData['hist_meta_' + selectedDateStr]) {
+                    if (pastData['hist_meta_' + selectedDateStr] && pastData['hist_meta_' + selectedDateStr] !== 'undefined') {
                         let meta = JSON.parse(pastData['hist_meta_' + selectedDateStr]);
-                        let items = pastData['hist_items_' + selectedDateStr] ? JSON.parse(pastData['hist_items_' + selectedDateStr]) : [];
+                        let items = pastData['hist_items_' + selectedDateStr] && pastData['hist_items_' + selectedDateStr] !== 'undefined' ? JSON.parse(pastData['hist_items_' + selectedDateStr]) : [];
                         dayData = { consumed: meta.consumed, target: meta.target, items: items };
                     }
                 } catch(e) {}
