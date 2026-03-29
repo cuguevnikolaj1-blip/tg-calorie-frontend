@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
 
     <style>
         :root {
@@ -482,21 +484,15 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (С ВЫБРОСОМ ОШИБОК)
+        // 🔥 АБСОЛЮТНО БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА (С АВТО-ПОВТОРОМ ДЛЯ iOS)
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
         function getCloudKeys() {
             return new Promise((resolve, reject) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Cloud keys connection timeout")); } }, 10000); 
-                try { 
-                    tg.CloudStorage.getKeys((err, keys) => { 
-                        if(!handled) { 
-                            handled=true; clearTimeout(t); 
-                            if(err) reject(new Error(err)); else resolve(keys || []); 
-                        } 
-                    }); 
-                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } } 
+                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Таймаут ключей")); } }, 4000); 
+                try { tg.CloudStorage.getKeys((err, keys) => { if(!handled) { handled=true; clearTimeout(t); if(err) reject(new Error(err)); else resolve(keys || []); } }); } 
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } } 
             });
         }
 
@@ -504,22 +500,31 @@
             return new Promise((resolve, reject) => {
                 if (!keysArray || keysArray.length === 0) return resolve({});
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Cloud items connection timeout")); } }, 10000); 
-                try { 
-                    tg.CloudStorage.getItems(keysArray, (err, vals) => { 
-                        if(!handled) { 
-                            handled=true; clearTimeout(t); 
-                            if(err) reject(new Error(err)); else resolve(vals || {}); 
-                        } 
-                    }); 
-                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } }
+                const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Таймаут данных")); } }, 4500); 
+                try { tg.CloudStorage.getItems(keysArray, (err, vals) => { if(!handled) { handled=true; clearTimeout(t); if(err) reject(new Error(err)); else resolve(vals || {}); } }); } 
+                catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } }
             });
+        }
+
+        // 🚀 УМНЫЙ АВТО-ПОВТОР (Спасает от лагов iOS)
+        async function safeCloudFetch(action, keys, retries = 3) {
+            let lastError;
+            for(let i = 0; i < retries; i++) {
+                try {
+                    if(action === 'keys') return await getCloudKeys();
+                    if(action === 'items') return await getCloudItems(keys);
+                } catch(e) {
+                    lastError = e;
+                    await delay(800); // Ждем 0.8 сек и пробуем снова
+                }
+            }
+            throw lastError;
         }
 
         function removeCloudItem(key) {
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); 
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 4000); 
                 try { tg.CloudStorage.removeItem(key, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
@@ -529,7 +534,7 @@
             await delay(200); 
             return new Promise((resolve) => {
                 let handled = false;
-                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 8000); 
+                const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 6000); 
                 try { tg.CloudStorage.setItem(key, value, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
@@ -547,11 +552,7 @@
             if (tg.initDataUnsafe?.user?.id) {
                 const tzOffset = -new Date().getTimezoneOffset(); 
                 try {
-                    await fetch(API_BASE_URL + '/settings', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' },
-                        body: JSON.stringify({ notify: notifyVal, tz: tzOffset })
-                    });
+                    await fetch(API_BASE_URL + '/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' }, body: JSON.stringify({ notify: notifyVal, tz: tzOffset }) });
                 } catch(e) {}
             }
         }
@@ -563,14 +564,17 @@
             let allKeys = [];
             
             try {
-                // 🔥 1. Надежно получаем ключи. При ошибке - останавливаем загрузку, защищая базу.
-                allKeys = await getCloudKeys().catch(e => []);
+                // 🔥 Даем мосту iOS WebKit полсекунды на прогрузку, иначе он теряет первый запрос
+                await delay(500);
 
-                // 🔥 2. Добавлен ключ hist_dates (реестр дней) для обхода пустого списка getKeys()
+                // 🔥 Запрашиваем ключи с 3 попытками 
+                allKeys = await safeCloudFetch('keys', null, 3).catch(e => []);
+
                 const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog', 'hist_dates'];
-                const coreData = await getCloudItems(coreKeys);
+                
+                // 🔥 Запрашиваем основные данные с 3 попытками
+                const coreData = await safeCloudFetch('items', coreKeys, 3);
 
-                // 🔥 3. Собираем список файлов истории из Реестра + ключей облака
                 let histDatesFromIndex = [];
                 try { if (coreData['hist_dates']) histDatesFromIndex = JSON.parse(coreData['hist_dates']); } catch(e) {}
 
@@ -585,14 +589,17 @@
                 const histItemKeys = [...new Set([...histItemKeysFromIndex, ...histItemKeysFromCloud])];
                 
                 const keysToFetch = [...histMetaKeys, ...histItemKeys];
-                const histData = keysToFetch.length > 0 ? await getCloudItems(keysToFetch) : {};
+                
+                // 🔥 Запрашиваем историю с 3 попытками
+                const histData = keysToFetch.length > 0 ? await safeCloudFetch('items', keysToFetch, 3) : {};
                 
                 cloudData = { ...coreData, ...histData };
 
             } catch (connectionError) {
-                // КРИТИЧЕСКАЯ ОШИБКА: Считаем это потерей связи, останавливаем запуск
                 document.getElementById('loading-screen').style.display = 'none';
-                tg.showAlert("⚠️ Ошибка подключения к облаку Telegram! Мы остановили загрузку, чтобы защитить ваши данные. Пожалуйста, перезапустите приложение.");
+                // 🔥 Выводим точный текст ошибки, чтобы знать причину, если вдруг не сработают все 3 попытки
+                const errMsg = connectionError.message || "Сбой связи";
+                tg.showAlert(`⚠️ Ошибка: ${errMsg}. Нажмите "Закрыть" и попробуйте открыть еще раз.`);
                 return; 
             }
 
