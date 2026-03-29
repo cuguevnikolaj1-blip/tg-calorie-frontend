@@ -21,14 +21,13 @@
         * { -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg-gradient); background-attachment: fixed; color: var(--text-dark); margin: 0; padding: 60px 20px 110px 20px; box-sizing: border-box; min-height: 100vh; }
         h2 { text-align: left; font-size: 24px; font-weight: 700; margin-bottom: 20px; margin-top: 0; color: #1C1C1E; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
-        .card { position: relative; background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 600px; margin-left: auto; margin-right: auto; }
+        .card { background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 600px; margin-left: auto; margin-right: auto; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         input[type="number"], input[type="text"], select { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); box-sizing: border-box; font-size: 16px; background: rgba(255,255,255,0.9); color: var(--text-dark); font-family: 'Poppins', sans-serif; outline: none; transition: 0.2s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         input:focus { border-color: var(--macro-protein); background: #fff; }
         button { border: none; padding: 16px; border-radius: 18px; width: 100%; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Poppins', sans-serif; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.97); }
-        button:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-primary { background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); color: #fff; box-shadow: 0 6px 15px rgba(142, 55, 215, 0.3); }
         .btn-secondary { background: rgba(255,255,255,0.7); color: var(--text-dark); border: 1px solid rgba(0,0,0,0.05); }
 
@@ -71,22 +70,16 @@
         .history-info { flex: 1; }
         .history-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
         .history-info p { margin: 0; font-size: 13px; color: var(--text-gray); font-weight: 500;}
-        
-        .action-btns { display: flex; gap: 8px; margin-left: 10px; flex-shrink: 0; }
-        .delete-btn, .edit-btn { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; padding: 0; border: none; cursor: pointer; transition: transform 0.2s;}
-        .delete-btn:active, .edit-btn:active { transform: scale(0.9); }
-        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--accent-red); }
-        .edit-btn { background: rgba(0, 122, 255, 0.1); color: var(--water-blue); }
+        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--accent-red); width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 10px; flex-shrink: 0; padding: 0; }
 
         .calendar-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 20px; font-size: 18px; }
         .calendar-header button { width: 40px; height: 40px; padding: 0; background: rgba(255,255,255,0.5); color: var(--text-dark); border-radius: 14px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
         .calendar-day-name { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
-        
         .calendar-day { padding: 14px 0; border-radius: 14px; cursor: pointer; font-size: 15px; font-weight: 500; transition: 0.2s; background: transparent; }
         .calendar-day.empty { cursor: default; }
         .calendar-day.has-data { background: rgba(255,255,255,0.6); color: var(--text-dark); font-weight: 600; }
-        .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); border: none; }
+        .calendar-day.selected { background: var(--macro-protein); color: #fff; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); }
         .calendar-day.is-today { font-weight: 700; color: var(--macro-protein); box-shadow: inset 0 0 0 2px rgba(138, 43, 226, 0.2); }
 
         details { width: 100%; }
@@ -101,24 +94,22 @@
         
         .loader-text { text-align: center; font-size: 18px; margin-top: 40vh; font-weight: 600; color: var(--text-dark); }
 
+        /* --- СЛАЙДЕР ЯЗЫКОВ --- */
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         .lang-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .lang-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
+        .lang-toggle-thumb { 
+            position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); 
+            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); 
+            border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); 
+            z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); 
+        }
         .lang-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 24px; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; }
         .lang-btn:active { transform: scale(0.9); }
         .lang-toggle[data-active="en"] .lang-toggle-thumb { transform: translateX(0%); }
         .lang-toggle[data-active="ru"] .lang-toggle-thumb { transform: translateX(100%); }
         .lang-toggle[data-active="es"] .lang-toggle-thumb { transform: translateX(200%); }
         .lang-toggle[data-active="zh"] .lang-toggle-thumb { transform: translateX(300%); }
-
-        .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
-        .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
-        .notify-toggle[data-active="1"] .notify-toggle-thumb { transform: translateX(100%); }
-        .notify-toggle[data-active="0"] .notify-toggle-thumb { transform: translateX(0%); }
-        .notify-toggle[data-active="1"] .notify-btn[data-val="1"] { color: #fff; }
-        .notify-toggle[data-active="0"] .notify-btn[data-val="0"] { color: #fff; }
     </style>
 </head>
 <body>
@@ -232,16 +223,6 @@
                 </div>
             </div>
 
-            <div class="lang-slider-wrapper">
-                <div class="lang-slider-title" data-i18n="lbl_notify">Уведомления</div>
-                <div class="notify-toggle" id="notifyToggle" data-active="1">
-                    <div class="notify-toggle-thumb"></div>
-                    <button class="notify-btn" data-val="0" data-i18n="notify_off">Выкл</button>
-                    <button class="notify-btn" data-val="1" data-i18n="notify_on">Вкл</button>
-                </div>
-                <input type="hidden" id="notify" value="1">
-            </div>
-
             <div class="form-group"><label data-i18n="lbl_gender">Gender</label><select id="gender"><option value="male" data-i18n="gen_m">Male</option><option value="female" data-i18n="gen_f">Female</option></select></div>
             <div class="form-group"><label data-i18n="lbl_age">Age (years)</label><input type="number" id="age" value="25"></div>
             <div class="form-group"><label data-i18n="lbl_height">Height (cm)</label><input type="number" id="height" value="180"></div>
@@ -282,7 +263,7 @@
             <div class="buttons-column">
                 <button id="save-food-btn" class="btn-primary" onclick="saveRealFood()"><span data-i18n="btn_save_food">Save to Diary</span></button>
                 <button class="btn-secondary" onclick="toggleRefine()"><i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">Уточнить порцию</span></button>
-                <button class="btn-secondary" onclick="cancelFood()" style="background: rgba(255, 59, 48, 0.1); color: var(--accent-red); border: none;"><span data-i18n="btn_cancel">Cancel</span></button>
+                <button class="btn-secondary" onclick="cancelFood()"><span data-i18n="btn_cancel">Cancel</span></button>
             </div>
         </div>
     </div>
@@ -319,8 +300,7 @@
                 load_prep: "Preparing photo...", load_ai: "Analyzing photo...", load_calc: "Calculating...", error_ai: "Oops, couldn't connect to AI. Try again!",
                 months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                btn_refine: "Refine portion", refine_placeholder: "e.g., I ate half...",
-                lbl_notify: "Notifications", notify_on: "On", notify_off: "Off"
+                btn_refine: "Refine portion", refine_placeholder: "e.g., I ate half..."
             },
             ru: {
                 sync: "Синхронизация...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
@@ -339,8 +319,7 @@
                 load_prep: "Подготавливаю фото...", load_ai: "Изучаю фото...", load_calc: "Считаю граммы...", error_ai: "Ой, не удалось подключиться к ИИ. Попробуй еще раз!",
                 months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
                 days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-                btn_refine: "Уточнить порцию", refine_placeholder: "Например: съел половину...",
-                lbl_notify: "Уведомления", notify_on: "Вкл", notify_off: "Выкл"
+                btn_refine: "Уточнить порцию", refine_placeholder: "Например: съел половину..."
             },
             es: {
                 sync: "Sincronizando...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
@@ -359,12 +338,11 @@
                 load_prep: "Preparando foto...", load_ai: "Analizando foto...", load_calc: "Calculando...", error_ai: "¡Ups, no se pudo conectar a la IA. ¡Inténtalo de nuevo!",
                 months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                 days: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'],
-                btn_refine: "Refinar porción", refine_placeholder: "Ej: comí la mitad...",
-                lbl_notify: "Notificaciones", notify_on: "Act", notify_off: "Des"
+                btn_refine: "Refinar porción", refine_placeholder: "Ej: comí la mitad..."
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
-                protein: "蛋白质", 测试: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
+                protein: "蛋白质", fats: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
                 water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？",
                 btn_photo: "拍照 (点击 📎)", btn_gallery: "从相册选择",
                 history: "我的历史记录", empty_history: "还没吃任何东西",
@@ -379,8 +357,7 @@
                 load_prep: "准备照片...", load_ai: "分析照片中...", load_calc: "计算中...", error_ai: "糟糕，无法连接到 AI。请重试！",
                 months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
                 days: ['一', '二', '三', '四', '五', '六', '日'],
-                btn_refine: "修改份量", refine_placeholder: "例如：我吃了一半...",
-                lbl_notify: "通知", notify_on: "开", notify_off: "关"
+                btn_refine: "修改份量", refine_placeholder: "例如：我吃了一半..."
             }
         };
 
@@ -421,18 +398,8 @@
             btn.addEventListener('click', (e) => { changeLanguage(e.currentTarget.getAttribute('data-lang')); });
         });
 
-        document.querySelectorAll('.notify-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const val = e.currentTarget.getAttribute('data-val');
-                document.getElementById('notifyToggle').setAttribute('data-active', val);
-                document.getElementById('notify').value = val;
-                await saveToCloud('notifyPref', val);
-                syncSettingsWithServer(val);
-            });
-        });
-
-        window.userMacros = null; window.consumedToday = null; window.consumedItems = []; window.waterHistory = {}; 
-        window.loggedDates = []; // 🔥 Реестр дней с едой для календаря
+        window.userMacros = null; window.consumedToday = null; window.consumedItems = []; 
+        window.waterHistory = {}; window.loggedDates = []; 
 
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
@@ -444,6 +411,7 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
+        // 🔥 БЕЗОПАСНЫЕ ФУНКЦИИ ОБЛАКА С ТАЙМАУТАМИ
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
         function getCloudItems(keysArray) {
@@ -477,31 +445,21 @@
         }
         function getTodayDate() { return getFormattedDate(new Date()); }
 
-        async function syncSettingsWithServer(notifyVal) {
-            if (tg.initDataUnsafe?.user?.id) {
-                const tzOffset = -new Date().getTimezoneOffset(); 
-                try {
-                    await fetch(API_BASE_URL + '/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' }, body: JSON.stringify({ notify: notifyVal, tz: tzOffset }) });
-                } catch(e) {}
-            }
-        }
-
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
 
             try {
-                // 🔥 Генерируем ключи за последние 60 дней для безопасной миграции (БЕЗ getKeys!)
-                let potentialOldKeys = [];
-                let tempD = new Date();
-                for(let i=0; i<60; i++) {
-                    let d = new Date(tempD); d.setDate(tempD.getDate() - i);
-                    potentialOldKeys.push('hist_' + getFormattedDate(d));
-                }
+                await delay(500); // Даем iOS прогрузить мост связи
 
-                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates'];
+                // 🔥 1. ЗАГРУЖАЕМ ТОЛЬКО САМОЕ НЕОБХОДИМОЕ
+                const coreKeys = ['userLang', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates', 'historyLog'];
                 let cloudData = {};
                 
-                try { cloudData = await getCloudItems([...coreKeys, ...potentialOldKeys]); } catch(e) {}
+                try { 
+                    cloudData = await getCloudItems(coreKeys); 
+                } catch(e) {
+                    console.error("Ошибка загрузки профиля", e);
+                }
 
                 // Профиль и локализация
                 let urlLang = urlParams.get('lang'); 
@@ -511,11 +469,6 @@
                 else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
                 applyTranslations(); 
 
-                let notifyPref = cloudData['notifyPref'] || '1';
-                document.getElementById('notify').value = notifyPref;
-                document.getElementById('notifyToggle').setAttribute('data-active', notifyPref);
-                syncSettingsWithServer(notifyPref);
-
                 const user = tg.initDataUnsafe?.user;
                 if (user) {
                     if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
@@ -524,32 +477,27 @@
 
                 window.loggedDates = cloudData['logged_dates'] ? JSON.parse(cloudData['logged_dates']) : [];
 
-                // 🔥 ТИХАЯ МИГРАЦИЯ: Конвертируем старую историю без getKeys!
-                let migratedAny = false;
-                for (let k of potentialOldKeys) {
-                    if (cloudData[k] && cloudData[k] !== 'undefined') {
-                        try {
-                            let dateKey = k.replace('hist_', '');
-                            let record = JSON.parse(cloudData[k]);
+                // 🔥 2. ТИХАЯ МИГРАЦИЯ ДЛЯ СТАРЫХ ПОЛЬЗОВАТЕЛЕЙ (Из старого historyLog в новый безопасный формат)
+                if (cloudData['historyLog'] && cloudData['historyLog'] !== 'undefined') {
+                    try {
+                        let oldHist = JSON.parse(cloudData['historyLog']);
+                        let migrated = false;
+                        for (let dateKey in oldHist) {
+                            let record = oldHist[dateKey];
                             let meta = JSON.stringify({ consumed: record.consumed, target: record.target });
                             let items = JSON.stringify(record.items || []);
                             
                             await saveToCloud('hist_meta_' + dateKey, meta);
                             await saveToCloud('hist_items_' + dateKey, items);
                             
-                            // Удаляем старый тяжелый ключ
-                            tg.CloudStorage.removeItem(k, () => {});
-                            
-                            // Заносим дату в календарь
-                            if (!window.loggedDates.includes(dateKey)) {
-                                window.loggedDates.push(dateKey);
-                            }
-                            migratedAny = true;
-                        } catch(e) {}
+                            if (!window.loggedDates.includes(dateKey)) { window.loggedDates.push(dateKey); migrated = true; }
+                        }
+                        if (migrated) await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                        // Удаляем старый тяжелый лог, чтобы освободить место в памяти Телеграма
+                        tg.CloudStorage.removeItem('historyLog', () => {});
+                    } catch (e) {
+                        console.error("Ошибка миграции", e);
                     }
-                }
-                if (migratedAny) {
-                    await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
                 }
 
                 // Загрузка текущих данных
@@ -562,28 +510,32 @@
                 window.waterHistory = (waterHistoryStr && waterHistoryStr !== 'undefined') ? JSON.parse(waterHistoryStr) : {};
                 const today = getTodayDate();
 
-                // СМЕНА ДНЯ
+                // 🔥 3. БЕЗОПАСНАЯ СМЕНА ДНЯ
                 if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
-                    let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? consumedTodayStr : JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 });
-                    let pastTarget = userMacrosStr;
-                    let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? consumedItemsStr : "[]";
+                    let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
+                    let pastTarget = JSON.parse(userMacrosStr);
+                    let pastItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
 
-                    let dayMeta = JSON.stringify({ consumed: JSON.parse(pastConsumed), target: JSON.parse(pastTarget) });
-                    await saveToCloud('hist_meta_' + lastDateStr, dayMeta);
-                    await saveToCloud('hist_items_' + lastDateStr, pastItems);
+                    let dayMeta = JSON.stringify({ consumed: pastConsumed, target: pastTarget });
+                    
+                    // Сохраняем мету и проверяем успех, чтобы не удалить данные в случае ошибки
+                    let metaSaved = await saveToCloud('hist_meta_' + lastDateStr, dayMeta);
+                    
+                    if (metaSaved) {
+                        await saveToCloud('hist_items_' + lastDateStr, JSON.stringify(pastItems));
+                        
+                        if (!window.loggedDates.includes(lastDateStr)) {
+                            window.loggedDates.push(lastDateStr);
+                            await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                        }
 
-                    // 🔥 Сохраняем отметку в календаре
-                    if (!window.loggedDates.includes(lastDateStr)) {
-                        window.loggedDates.push(lastDateStr);
-                        await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                        // Обнуляем сегодняшний день
+                        consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
+                        consumedItemsStr = "[]";
+                        await saveToCloud('consumedToday', consumedTodayStr); 
+                        await saveToCloud('consumedItems', consumedItemsStr); 
+                        await saveToCloud('lastDate', today);
                     }
-
-                    // Обнуляем сегодняшний день
-                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
-                    consumedItemsStr = "[]";
-                    await saveToCloud('consumedToday', consumedTodayStr); 
-                    await saveToCloud('consumedItems', consumedItemsStr); 
-                    await saveToCloud('lastDate', today);
                 } else if (!lastDateStr) { 
                     await saveToCloud('lastDate', today); 
                 }
@@ -631,10 +583,6 @@
             const age = parseInt(document.getElementById('age').value); const height = parseInt(document.getElementById('height').value);
             const weight = parseInt(document.getElementById('weight').value); const activity = parseFloat(document.getElementById('activity').value);
             const gender = document.getElementById('gender').value; const goal = document.getElementById('goal').value;
-
-            const notifyVal = document.getElementById('notify').value;
-            await saveToCloud('notifyPref', notifyVal);
-            syncSettingsWithServer(notifyVal);
 
             let bmr = gender === 'male' ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
             let tdee = Math.round(bmr * activity);
@@ -714,21 +662,10 @@
                         <h4>${safeName}</h4>
                         <p>🔥 ${item.cal} ${t('kcal')} <span style="margin-left:5px; color:#c7c7cc;">•</span> P:${item.p} F:${item.f} C:${item.c}</p>
                     </div>
-                    <div class="action-btns">
-                        <button class="edit-btn" onclick="editFood(${item.id})"><i class="ph-bold ph-pencil-simple"></i></button>
-                        <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
-                    </div>
+                    <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
                 `;
                 listContainer.appendChild(div);
             });
-        }
-
-        function editFood(id) {
-            const item = window.consumedItems.find(i => i.id === id);
-            if (!item) return;
-            editingItemId = id; 
-            aiName = item.name; aiCal = item.cal; aiP = item.p; aiF = item.f; aiC = item.c; aiAl = item.al || '-'; aiEmoji = item.em || '🍽';
-            renderSandbox(); document.getElementById('refine-block').style.display = 'block'; 
         }
 
         function deleteFood(id) {
@@ -765,10 +702,9 @@
                 const el = document.createElement('div'); el.className = 'calendar-day'; el.innerText = d;
 
                 let hasWater = waterHistory[dateStr] > 0;
-                let hasFood = window.loggedDates.includes(dateStr); // 🔥 Подсветка прошлых дней из реестра
+                let hasFood = window.loggedDates.includes(dateStr); 
                 
-                if (hasWater || hasFood) { el.classList.add('has-data'); }
-                
+                if (hasWater || hasFood || dateStr === getTodayDate()) { el.classList.add('has-data'); }
                 if (dateStr === getTodayDate()) el.classList.add('is-today');
                 if (dateStr === selectedDateStr) el.classList.add('selected');
 
@@ -906,6 +842,7 @@
             document.getElementById('food-allergens').innerText = aiAl; document.getElementById('sandbox-screen').style.display = 'block';
         }
 
+        // 🔥 Функции для кнопки "Уточнить порцию"
         function toggleRefine() {
             const block = document.getElementById('refine-block');
             block.style.display = block.style.display === 'none' ? 'block' : 'none';
