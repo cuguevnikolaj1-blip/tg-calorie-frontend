@@ -439,8 +439,26 @@
         }
 
         // 🔥 САМЫЕ ПРОСТЫЕ ФУНКЦИИ ОБЛАКА КАК В СТАРОЙ БАЗЕ
-        function saveToCloud(key, value) { 
-            return new Promise((resolve) => tg.CloudStorage.setItem(key, value, () => resolve(true))); 
+        function saveToCloud(key, value) {
+            return new Promise((resolve) => {
+                let handled = false;
+                const timeout = setTimeout(() => {
+                    if (!handled) { handled = true; resolve(false); }
+                }, 8000); // таймаут 8 сек
+                
+                try {
+                    tg.CloudStorage.setItem(key, value, (err, ok) => {
+                        if (!handled) {
+                            handled = true;
+                            clearTimeout(timeout);
+                            if (err) console.error(`CloudStorage error [${key}]:`, err);
+                            resolve(!err && ok);
+                        }
+                    });
+                } catch(e) {
+                    if (!handled) { handled = true; clearTimeout(timeout); resolve(false); }
+                }
+            });
         }
         function getFromCloud(key) { 
             return new Promise((resolve) => tg.CloudStorage.getItem(key, (err, val) => resolve(val))); 
@@ -530,20 +548,29 @@
 
                 let dayMeta = JSON.stringify({ consumed: JSON.parse(pastConsumed), target: JSON.parse(pastTarget) });
                 
-                await saveToCloud('hist_meta_' + lastDateStr, dayMeta);
-                await saveToCloud('hist_items_' + lastDateStr, pastItems);
+                // 1. Пытаемся сохранить историю
+                let metaSaved = await saveToCloud('hist_meta_' + lastDateStr, dayMeta);
+                
+                // 2. ПРОДОЛЖАЕМ ТОЛЬКО ЕСЛИ ИСТОРИЯ ТОЧНО СОХРАНЕНА
+                if (metaSaved) {
+                    await saveToCloud('hist_items_' + lastDateStr, pastItems);
 
-                if (!window.loggedDates.includes(lastDateStr)) {
-                    window.loggedDates.push(lastDateStr);
-                    await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                    if (!window.loggedDates.includes(lastDateStr)) {
+                        window.loggedDates.push(lastDateStr);
+                        await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
+                    }
+
+                    // 3. Сначала обновляем дату!
+                    await saveToCloud('lastDate', today); 
+
+                    // 4. Только теперь безопасно обнуляем экран
+                    consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
+                    consumedItemsStr = "[]";
+                    await saveToCloud('consumedToday', consumedTodayStr); 
+                    await saveToCloud('consumedItems', consumedItemsStr); 
+                } else {
+                    console.error("Сбой сохранения истории, перенос дня отменен для защиты данных.");
                 }
-
-                // Обнуляем сегодняшний день
-                consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
-                consumedItemsStr = "[]";
-                await saveToCloud('consumedToday', consumedTodayStr); 
-                await saveToCloud('consumedItems', consumedItemsStr); 
-                await saveToCloud('lastDate', today);
             } else if (!lastDateStr) { 
                 await saveToCloud('lastDate', today); 
             }
