@@ -91,8 +91,6 @@
         .calendar-day.status-green { box-shadow: inset 0 0 0 2.5px #34C759; background: rgba(255,255,255,0.8); font-weight: 600; }
         .calendar-day.status-red { box-shadow: inset 0 0 0 2.5px #FF3B30; background: rgba(255,255,255,0.8); font-weight: 600; }
         .calendar-day.status-yellow { box-shadow: inset 0 0 0 2.5px #FFCC00; background: rgba(255,255,255,0.8); font-weight: 600; }
-        
-        /* 🔥 ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ВЫДЕЛЕНИЯ И "СЕГОДНЯ" */
         .calendar-day.is-today { font-weight: 700; color: var(--macro-protein); box-shadow: inset 0 0 0 2px rgba(138, 43, 226, 0.2); }
         .calendar-day.selected { background: var(--macro-protein); color: #fff !important; font-weight: 600; box-shadow: 0 6px 15px rgba(138, 43, 226, 0.3); border: none !important; }
 
@@ -307,7 +305,7 @@
             <div class="buttons-column">
                 <button id="save-food-btn" class="btn-primary" onclick="saveRealFood()"><span data-i18n="btn_save_food">Save to Diary</span></button>
                 <button class="btn-secondary" onclick="toggleRefine()"><i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">Уточнить порцию</span></button>
-                <button class="btn-secondary" onclick="cancelFood()" style="background: rgba(255, 59, 48, 0.1); color: var(--accent-red); border: none;"><span data-i18n="btn_cancel">Cancel</span></button>
+                <button class="btn-secondary" onclick="cancelFood()"><span data-i18n="btn_cancel">Cancel</span></button>
             </div>
         </div>
     </div>
@@ -470,7 +468,7 @@
         });
 
         window.userMacros = null; window.consumedToday = null; window.consumedItems = [];
-        window.historyLog = {}; window.waterHistory = {}; 
+        window.historyLog = {}; window.waterHistory = {}; window.loggedDates = [];
 
         let aiName = '', aiCal = 0, aiP = 0, aiF = 0, aiC = 0, aiAl = 'Нет', aiEmoji = '🍽';
 
@@ -482,9 +480,14 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 АДАПТЕР КЛЮЧЕЙ (Прячет точки от Телеграма)
-        function sanitizeKey(k) { return k.replace(/\./g, '_'); }
-        function desanitizeKey(k) { return k.replace(/_/g, '.'); }
+        // 🔥 АДАПТЕР КЛЮЧЕЙ (УМНЫЙ)
+        function sanitizeKey(k) { 
+            return k.replace(/\./g, '_'); 
+        }
+        function desanitizeKey(k) { 
+            // Возвращаем точки ТОЛЬКО там, где есть дата (две цифры _ две цифры _ четыре цифры)
+            return k.replace(/(\d{2})_(\d{2})_(\d{4})/g, '$1.$2.$3'); 
+        }
 
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -569,7 +572,7 @@
                 const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 6000); 
                 try { 
                     tg.CloudStorage.setItem(safeKey, value, (err, ok) => { 
-                        if(!handled) { handled=true; clearTimeout(t); resolve(!err); } // Убрали '&& ok' для совместимости с ПК/Андроид
+                        if(!handled) { handled=true; clearTimeout(t); resolve(!err); }
                     }); 
                 }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
@@ -604,16 +607,17 @@
 
                 allKeys = await safeCloudFetch('keys', null, 3).catch(e => []);
 
-                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'historyLog', 'hist_dates'];
+                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates'];
                 const coreData = await safeCloudFetch('items', coreKeys, 3);
 
-                let histDatesFromIndex = [];
-                try { if (coreData['hist_dates']) histDatesFromIndex = JSON.parse(coreData['hist_dates']); } catch(e) {}
+                let loggedDatesFromIndex = [];
+                try { if (coreData['logged_dates']) loggedDatesFromIndex = JSON.parse(coreData['logged_dates']); } catch(e) {}
+                window.loggedDates = loggedDatesFromIndex;
 
-                const histMetaKeysFromIndex = histDatesFromIndex.map(d => 'hist_' + d);
-                const histItemKeysFromIndex = histDatesFromIndex.map(d => 'hist_items_' + d);
+                const histMetaKeysFromIndex = window.loggedDates.map(d => 'hist_' + d);
+                const histItemKeysFromIndex = window.loggedDates.map(d => 'hist_items_' + d);
 
-                const excludeKeys = ['hist_dates', 'historyLog'];
+                const excludeKeys = ['logged_dates'];
                 const histMetaKeysFromCloud = (allKeys || []).filter(k => k && k.startsWith('hist_') && !k.startsWith('hist_items_') && !excludeKeys.includes(k));
                 const histItemKeysFromCloud = (allKeys || []).filter(k => k && k.startsWith('hist_items_'));
 
@@ -652,7 +656,7 @@
             }
 
             window.historyLog = {};
-            const histMetaKeys = Object.keys(cloudData).filter(k => k.startsWith('hist_') && !k.startsWith('hist_items_') && k !== 'hist_dates' && k !== 'historyLog');
+            const histMetaKeys = Object.keys(cloudData).filter(k => k.startsWith('hist_') && !k.startsWith('hist_items_') && k !== 'logged_dates');
             
             for(let k of histMetaKeys) {
                 try {
@@ -691,15 +695,12 @@
                 let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                 let dayMeta = { consumed: pastConsumed, target: pastTarget };
                 
-                // 1. Сразу обновляем дату, чтобы больше не застревать во вчерашнем дне!
+                // 1. Сразу обновляем дату
                 await saveToCloud('lastDate', today);
-
-                let histDates = [];
-                try { if (cloudData['hist_dates']) histDates = JSON.parse(cloudData['hist_dates']); } catch(e) {}
                 
-                if (!histDates.includes(lastDateStr)) {
-                    histDates.push(lastDateStr);
-                    await saveToCloud('hist_dates', JSON.stringify(histDates));
+                if (!window.loggedDates.includes(lastDateStr)) {
+                    window.loggedDates.push(lastDateStr);
+                    await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
                 }
 
                 // 2. Сохраняем историю
