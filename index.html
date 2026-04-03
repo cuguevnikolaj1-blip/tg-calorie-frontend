@@ -465,6 +465,33 @@
             });
             document.getElementById('text-food-input').placeholder = t('placeholder');
             document.getElementById('langToggle').setAttribute('data-active', currLang);
+
+            // 🔥 ОБНОВЛЯЕМ ПРОФИЛЬ ТОЛЬКО ПОСЛЕ ТОГО, КАК ЯЗЫК УСТАНОВЛЕН
+            const badge = document.getElementById('profile-status-badge');
+            const premBtn = document.getElementById('profile-premium-btn');
+            const premBtnText = document.getElementById('profile-premium-btn-text');
+
+            if (badge && premBtn && premBtnText) {
+                if (window.userStatus === 'premium') {
+                    badge.removeAttribute('data-i18n');
+                    badge.innerHTML = '👑 Premium (' + t('days_left').replace('{d}', window.daysLeft) + ')'; 
+                    badge.style.background = 'rgba(255, 149, 0, 0.15)';
+                    badge.style.color = '#FF9500';
+                    badge.style.border = '1px solid rgba(255, 149, 0, 0.3)';
+                    
+                    premBtn.style.display = 'flex';
+                    premBtnText.innerText = t('btn_renew');
+                } else {
+                    badge.setAttribute('data-i18n', 'badge_free');
+                    badge.innerHTML = t('badge_free'); 
+                    badge.style.background = 'rgba(0, 0, 0, 0.05)';
+                    badge.style.color = 'var(--text-gray)';
+                    
+                    premBtn.style.display = 'flex';
+                    premBtnText.innerText = t('btn_buy_profile');
+                }
+            }
+
             updateWaterUI(window.waterHistory ? (window.waterHistory[getTodayDate()] || 0) : 0);
             if(window.consumedToday) updateDashboard();
             if(document.getElementById('tab-calendar').classList.contains('active-screen')) renderCalendar();
@@ -628,6 +655,7 @@
         }
 
         window.userStatus = 'free'; // По умолчанию
+        window.daysLeft = 0;
 
         function showPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; }
         function closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; }
@@ -659,33 +687,13 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
             
-            // 🔥 Запрашиваем статус пользователя и обновляем профиль
+            // 🔥 Только запрашиваем статус (отрисовка будет в applyTranslations)
             try {
                 const meRes = await fetch(API_BASE_URL + '/me', { headers: { 'Authorization': tg.initData || '' } });
                 if(meRes.ok) { 
-                    const meData = await meRes.json(); window.userStatus = meData.status; 
-                    const badge = document.getElementById('profile-status-badge');
-                    const premBtn = document.getElementById('profile-premium-btn');
-                    const premBtnText = document.getElementById('profile-premium-btn-text');
-
-                    if (window.userStatus === 'premium') {
-                        badge.removeAttribute('data-i18n'); // убираем автоматический перевод, т.к. собираем строку сами
-                        badge.innerHTML = '👑 Premium (' + t('days_left').replace('{d}', meData.days_left) + ')'; 
-                        badge.style.background = 'rgba(255, 149, 0, 0.15)';
-                        badge.style.color = '#FF9500';
-                        badge.style.border = '1px solid rgba(255, 149, 0, 0.3)';
-                        
-                        premBtn.style.display = 'flex';
-                        premBtnText.innerText = t('btn_renew');
-                    } else {
-                        badge.setAttribute('data-i18n', 'badge_free');
-                        badge.innerHTML = t('badge_free'); 
-                        badge.style.background = 'rgba(0, 0, 0, 0.05)';
-                        badge.style.color = 'var(--text-gray)';
-                        
-                        premBtn.style.display = 'flex';
-                        premBtnText.innerText = t('btn_buy_profile');
-                    }
+                    const meData = await meRes.json(); 
+                    window.userStatus = meData.status; 
+                    window.daysLeft = meData.days_left || 0;
                 }
             } catch(e) {}
 
