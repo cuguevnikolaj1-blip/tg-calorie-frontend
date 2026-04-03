@@ -146,6 +146,15 @@
         </div>
     </div>
 
+    <div id="premium-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-icon">🔒</div>
+            <h3 style="margin-bottom: 12px; color: #1C1C1E; font-size: 22px;">Лимит исчерпан</h3>
+            <p style="margin-bottom: 25px; color: var(--text-gray); font-size: 15px;">Твои 3 бесплатные попытки на сегодня закончились. Скоро здесь появится возможность купить <b>Premium</b> для безлимитного доступа!</p>
+            <button class="btn-primary" onclick="closePremiumModal()">Понятно</button>
+        </div>
+    </div>
+
     <div id="tab-diary-summary" class="screen active-screen">
         <div class="card" style="text-align: center;">
             <div id="streak-counter">🔥 0</div>
@@ -304,7 +313,7 @@
 
             <div class="buttons-column">
                 <button id="save-food-btn" class="btn-primary" onclick="saveRealFood()"><span data-i18n="btn_save_food">Save to Diary</span></button>
-                <button class="btn-secondary" onclick="toggleRefine()"><i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">Уточнить порцию</span></button>
+                <button id="btn-toggle-refine" class="btn-secondary" onclick="toggleRefine()"><i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">Уточнить порцию</span></button>
                 <button class="btn-secondary" onclick="cancelFood()"><span data-i18n="btn_cancel">Cancel</span></button>
             </div>
         </div>
@@ -596,8 +605,19 @@
             }
         }
 
+        window.userStatus = 'free'; // По умолчанию
+
+        function showPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; }
+        function closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; }
+
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
+            
+            // 🔥 Запрашиваем статус пользователя (Free / Premium)
+            try {
+                const meRes = await fetch(API_BASE_URL + '/me', { headers: { 'Authorization': tg.initData || '' } });
+                if(meRes.ok) { const meData = await meRes.json(); window.userStatus = meData.status; }
+            } catch(e) {}
 
             let cloudData = {};
             let allKeys = [];
@@ -1083,6 +1103,16 @@
                 if(isJson) options.headers['Content-Type'] = 'application/json';
                 
                 const response = await fetch(API_BASE_URL + finalEndpoint, options);
+                
+                // 🔥 ПРОВЕРЯЕМ ЛИМИТЫ FREEMIUM
+                if (response.status === 403) {
+                    const errData = await response.json();
+                    if (errData.limit_reached) {
+                        showPremiumModal();
+                        throw new Error("limit_reached_silent"); 
+                    }
+                }
+                
                 if (response.status === 429) throw new Error('Слишком много запросов. Подождите минуту.');
                 if (response.status === 401) throw new Error('Ошибка безопасности Telegram.');
                 if (!response.ok) throw new Error('Ошибка связи');
@@ -1091,9 +1121,10 @@
                 aiName = data.name; aiCal = parseInt(data.cal); aiP = parseInt(data.protein); aiF = parseInt(data.fat); aiC = parseInt(data.carbs); aiAl = data.allergens || '-'; aiEmoji = data.emoji || '🍽';
                 renderSandbox();
             } catch (err) { 
+                document.getElementById('loading-screen').style.display = 'none'; 
+                if (err.message === "limit_reached_silent") return; // Глушим ошибку, если показали модалку
                 const msg = err.message || t('error_ai');
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
-                document.getElementById('loading-screen').style.display = 'none'; 
             }
         }
 
@@ -1109,7 +1140,21 @@
             document.getElementById('loading-screen').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'none';
             document.getElementById('food-name').innerText = `${aiEmoji} ${aiName}`; document.getElementById('food-cal').innerText = aiCal + ` ${t('kcal')}`;
             document.getElementById('sandbox-p').innerText = `P: ${aiP} g`; document.getElementById('sandbox-f').innerText = `F: ${aiF} g`; document.getElementById('sandbox-c').innerText = `C: ${aiC} g`;
-            document.getElementById('food-allergens').innerText = aiAl; document.getElementById('sandbox-screen').style.display = 'block';
+            document.getElementById('food-allergens').innerText = aiAl; 
+            
+            // 🔥 ВЕШАЕМ ЗАМОЧЕК НА КНОПКУ "УТОЧНИТЬ", ЕСЛИ ЮЗЕР FREE
+            const refineBtn = document.getElementById('btn-toggle-refine');
+            if (window.userStatus === 'free') {
+                refineBtn.innerHTML = `<i class="ph-bold ph-lock" style="color: #FF9500;"></i> <span data-i18n="btn_refine">${t('btn_refine')}</span>`;
+                refineBtn.style.opacity = '0.7';
+                refineBtn.onclick = showPremiumModal; // При клике покажет модалку
+            } else {
+                refineBtn.innerHTML = `<i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">${t('btn_refine')}</span>`;
+                refineBtn.style.opacity = '1';
+                refineBtn.onclick = toggleRefine; // При клике работает как обычно
+            }
+            
+            document.getElementById('sandbox-screen').style.display = 'block';
         }
 
         function toggleRefine() {
