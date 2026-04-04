@@ -365,7 +365,7 @@
                 days_left: "{d} days left", 
                 btn_renew: "Renew Premium", 
                 btn_buy_profile: "Get Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Unlimited photo analysis<br>✔️ Unlimited text input<br>✔️ Access to portion refine<br><br><i>Unlock the full potential for just 150 ⭐ for 30 days!</i>", btn_buy: "Buy for 150 ⭐️", btn_later: "Later", badge_free: "👤 Basic Plan", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Unlimited photo analysis<br>✔️ Unlimited text input<br>✔️ Access to portion refine<br><br><i>Unlock the full potential for just 75 ⭐ for 30 days!</i>", btn_buy: "Buy for 75 ⭐️", btn_later: "Later", badge_free: "👤 Basic Plan", badge_prem: "👑 Premium"
             },
             ru: {
                 sync: "Синхронизация...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
@@ -392,7 +392,7 @@
                 days_left: "Осталось {d} дн.", 
                 btn_renew: "Продлить Premium", 
                 btn_buy_profile: "Купить Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Безлимитное распознавание фото<br>✔️ Безлимитный текстовый ввод<br>✔️ Доступ к 'Уточнению порций'<br><br><i>Разблокируй полный потенциал всего за 150 ⭐ на 30 дней!</i>", btn_buy: "Купить за 150 ⭐️", btn_later: "Позже", badge_free: "👤 Базовый план", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Безлимитное распознавание фото<br>✔️ Безлимитный текстовый ввод<br>✔️ Доступ к 'Уточнению порций'<br><br><i>Разблокируй полный потенциал всего за 75 ⭐ на 30 дней!</i>", btn_buy: "Купить за 75 ⭐️", btn_later: "Позже", badge_free: "👤 Базовый план", badge_prem: "👑 Premium"
             },
             es: {
                 sync: "Sincronizando...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
@@ -419,7 +419,7 @@
                 days_left: "{d} días rest.", 
                 btn_renew: "Renovar Premium", 
                 btn_buy_profile: "Obtener Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Análisis de fotos ilimitado<br>✔️ Entrada de texto ilimitada<br>✔️ Acceso a refinar porciones<br><br><i>¡Desbloquea todo el potencial por solo 150 ⭐ por 30 días!</i>", btn_buy: "Comprar por 150 ⭐️", btn_later: "Más tarde", badge_free: "👤 Plan Básico", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Análisis de fotos ilimitado<br>✔️ Entrada de texto ilimitada<br>✔️ Acceso a refinar porciones<br><br><i>¡Desbloquea todo el potencial por solo 75 ⭐ por 30 días!</i>", btn_buy: "Comprar por 75 ⭐️", btn_later: "Más tarde", badge_free: "👤 Plan Básico", badge_prem: "👑 Premium"
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
@@ -446,7 +446,7 @@
                 days_left: "剩余 {d} 天", 
                 btn_renew: "续订高级版", 
                 btn_buy_profile: "获取高级版",
-                prem_title: "智能高级版", prem_desc: "✔️ 无限照片分析<br>✔️ 无限文本输入<br>✔️ 修改份量功能<br><br><i>仅需 150 ⭐ 即可解锁 30 天全部功能！</i>", btn_buy: "花费 150 ⭐️ 购买", btn_later: "以后", badge_free: "👤 基础计划", badge_prem: "👑 高级版"
+                prem_title: "智能高级版", prem_desc: "✔️ 无限照片分析<br>✔️ 无限文本输入<br>✔️ 修改份量功能<br><br><i>仅需 75 ⭐ 即可解锁 30 天全部功能！</i>", btn_buy: "花费 75 ⭐️ 购买", btn_later: "以后", badge_free: "👤 基础计划", badge_prem: "👑 高级版"
             }
         };
 
@@ -474,7 +474,8 @@
             if (badge && premBtn && premBtnText) {
                 if (window.userStatus === 'premium') {
                     badge.removeAttribute('data-i18n');
-                    badge.innerHTML = '👑 Premium (' + t('days_left').replace('{d}', window.daysLeft) + ')'; 
+                    let daysText = window.daysLeft > 0 ? t('days_left').replace('{d}', window.daysLeft) : "∞";
+                    badge.innerHTML = '👑 Premium (' + daysText + ')'; 
                     badge.style.background = 'rgba(255, 149, 0, 0.15)';
                     badge.style.color = '#FF9500';
                     badge.style.border = '1px solid rgba(255, 149, 0, 0.3)';
@@ -665,8 +666,8 @@
             const btn = document.getElementById('btn-buy-prem');
             btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i>'; btn.disabled = true;
             try {
-                // Передаем текущий язык на бэкенд!
-                const res = await fetch(API_BASE_URL + '/get_invoice?lang=' + currLang, { headers: { 'Authorization': tg.initData || '' } });
+                // Передаем текущий язык и сбрасываем кэш!
+                const res = await fetch(API_BASE_URL + '/get_invoice?lang=' + currLang + '&_t=' + Date.now(), { headers: { 'Authorization': tg.initData || '' } });
                 const data = await res.json();
                 if (data.url) {
                     tg.openInvoice(data.url, function(status) {
@@ -687,10 +688,10 @@
         window.onload = async function() {
             document.getElementById('loading-screen').style.display = 'block';
             
-            // 🔥 Только запрашиваем статус (отрисовка будет в applyTranslations)
+            // 🔥 Запрашиваем статус (добавили ?_t= для защиты от кэширования)
             try {
-                const meRes = await fetch(API_BASE_URL + '/me', { headers: { 'Authorization': tg.initData || '' } });
-                if(meRes.ok) { 
+                const meRes = await fetch(API_BASE_URL + '/me?_t=' + Date.now(), { headers: { 'Authorization': tg.initData || '' } });
+                if(meRes.ok) {
                     const meData = await meRes.json(); 
                     window.userStatus = meData.status; 
                     window.daysLeft = meData.days_left || 0;
