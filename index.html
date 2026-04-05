@@ -336,6 +336,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         
+        // 🔥 TODO: Замените на домен за Cloudflare/nginx прокси, чтобы скрыть реальный IP сервера
+        // Пример: const API_BASE_URL = 'https://api.smartfoodtracker.com';
         const API_BASE_URL = 'https://64.188.61.46.nip.io';
         let editingItemId = null;
         
@@ -423,7 +425,7 @@
             },
             zh: {
                 sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
-                protein: "蛋白质", 测试: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
+                protein: "蛋白质", fats: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
                 water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？",
                 btn_photo: "拍照 (点击 📎)", btn_gallery: "从相册选择",
                 history: "我的历史记录", empty_history: "还没吃任何东西",
@@ -1143,6 +1145,22 @@
             const file = event.target.files[0]; 
             if (!file) return;
             
+            // 🔥 Проверка размера на клиенте (5 MB)
+            if (file.size > 5 * 1024 * 1024) {
+                const msg = currLang === 'ru' ? 'Файл слишком большой (макс 5 MB)' : 'File too large (max 5 MB)';
+                if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
+                event.target.value = '';
+                return;
+            }
+            
+            // 🔥 Проверка типа файла
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                const msg = currLang === 'ru' ? 'Поддерживаются только фото (JPEG, PNG, WebP)' : 'Only photos supported (JPEG, PNG, WebP)';
+                if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
+                event.target.value = '';
+                return;
+            }
+            
             showLoader(t('load_prep')); 
 
             const reader = new FileReader();
@@ -1170,7 +1188,13 @@
         function handleRefineEnter(event) { if(event.key === 'Enter') sendRefineAI(); }
 
         async function sendTextToAI() {
-            const textInput = document.getElementById('text-food-input').value; if(!textInput) return;
+            const textInput = document.getElementById('text-food-input').value.trim(); if(!textInput) return;
+            // 🔥 Проверка длины на клиенте
+            if (textInput.length > 500) {
+                const msg = currLang === 'ru' ? 'Текст слишком длинный (макс 500 символов)' : 'Text too long (max 500 characters)';
+                if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
+                return;
+            }
             showLoader(t('load_calc')); await sendToNgrok('/text', JSON.stringify({ text: textInput, lang: currLang }), true);
             document.getElementById('text-food-input').value = '';
         }
@@ -1242,8 +1266,15 @@
         }
 
         async function sendRefineAI() {
-            const textInput = document.getElementById('refine-input').value;
+            const textInput = document.getElementById('refine-input').value.trim();
             if(!textInput) return;
+            
+            // 🔥 Проверка длины
+            if (textInput.length > 500) {
+                const msg = currLang === 'ru' ? 'Текст слишком длинный (макс 500 символов)' : 'Text too long (max 500 characters)';
+                if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
+                return;
+            }
 
             const btn = document.getElementById('refine-btn');
             const origHtml = btn.innerHTML;
