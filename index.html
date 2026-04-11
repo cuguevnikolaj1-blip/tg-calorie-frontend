@@ -111,20 +111,20 @@
         .raccoon-container, .raccoon-read-container { position: relative; width: 220px; height: 220px; margin-bottom: 15px; }
         .part { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
-        /* Анимация: Лупа (Поиск) */
-        .pupils { animation: sync-eyes 3s infinite ease-in-out; }
-        .arm { transform-origin: 58% 68%; animation: sync-arm 3s infinite ease-in-out; z-index: 10; }
-        @keyframes sync-eyes { 0%, 100% { transform: translateX(0) translateY(0); } 50% { transform: translateX(-6px) translateY(2px); } }
-        @keyframes sync-arm { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(25deg); } }
+        /* Анимация: Лупа (Поиск) - ЗАМЕДЛЕНО И УМЕНЬШЕНО */
+        .pupils { animation: sync-eyes 4s infinite ease-in-out; }
+        .arm { transform-origin: 58% 68%; animation: sync-arm 4s infinite ease-in-out; z-index: 10; }
+        @keyframes sync-eyes { 0%, 100% { transform: translateX(0) translateY(0); } 50% { transform: translateX(-3px) translateY(2px); } }
+        @keyframes sync-arm { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } }
 
-        /* Анимация: Книга (Чтение/Синхронизация) */
+        /* Анимация: Книга (Чтение/Синхронизация) - УМЕНЬШЕН РАЗМАХ ГЛАЗ */
         .body1 { z-index: 1; }
         .pupils1 { z-index: 2; animation: read-eyes 5s infinite ease-in-out; }
         .lampa { z-index: 3; animation: idea-lamp 5s infinite ease-in-out; }
         @keyframes read-eyes {
             0%, 5% { transform: translateX(0) translateY(0); }
-            15%, 35% { transform: translateX(-4px) translateY(0); }
-            45%, 60% { transform: translateX(4px) translateY(0); }
+            15%, 35% { transform: translateX(-2px) translateY(0); }
+            45%, 60% { transform: translateX(2px) translateY(0); }
             65%, 85% { transform: translateX(0) translateY(-4px); }
             95%, 100% { transform: translateX(0) translateY(0); }
         }
@@ -133,6 +133,10 @@
             65%, 85% { opacity: 1; transform: scale(1); }
             90%, 100% { opacity: 0; transform: scale(0.95); }
         }
+
+        /* --- МИНИ-ЛОАДЕР ДЛЯ КНОПОК --- */
+        .mini-search-icon { display: inline-block; font-size: inherit; animation: miniSearch 0.8s infinite alternate ease-in-out; }
+        @keyframes miniSearch { 0% { transform: translateX(-4px) rotate(-15deg); } 100% { transform: translateX(4px) rotate(15deg); } }
 
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
@@ -390,7 +394,7 @@
             en: {
                 sync: "Flipping pages...", consumed: "CONSUMED", over: "OVER LIMIT", out_of: "of", kcal: "kcal",
                 protein: "Protein", fats: "Fats", carbs: "Carbs", water_title: "Water (250 ml)",
-                water_drank: "Drank: {c} / 8 glasses ({l} L)", placeholder: "What did you eat? Tell Bite!",
+                water_drank: "Drank: {c} / 8 glasses ({l} L)", placeholder: "What did you eat?",
                 btn_photo: "Snap a photo (tap 📎)", btn_gallery: "Pick from Gallery",
                 history: "My History", empty_history: "It's empty here. Feed me! 🦝",
                 calendar: "My Calendar", details: "Food Details", nothing_logged: "Bite is sad, nothing logged...", today: "(Today)", no_data: "No data for this day",
@@ -417,7 +421,7 @@
             ru: {
                 sync: "Шуршу страницами...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
                 protein: "Белки", fats: "Жиры", carbs: "Углеводы", water_title: "Вода (250 мл)",
-                water_drank: "Выпито: {c} / 8 стаканов ({l} л)", placeholder: "Что ты съел? Расскажи Байту!",
+                water_drank: "Выпито: {c} / 8 стаканов ({l} л)", placeholder: "Что ты съел?",
                 btn_photo: "Сфотографировать (жми 📎)", btn_gallery: "Выбрать из Галереи",
                 history: "Моя История", empty_history: "Тут пока пусто. Покорми меня! 🦝",
                 calendar: "Мой Календарь", details: "Детали питания", nothing_logged: "Байт грустит, еды не было...", today: "(Сегодня)", no_data: "Нет данных за этот день",
@@ -444,7 +448,7 @@
             es: {
                 sync: "Pasando páginas...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
                 protein: "Proteína", fats: "Grasas", carbs: "Carbs", water_title: "Agua (250 ml)",
-                water_drank: "Bebido: {c} / 8 vasos ({l} L)", placeholder: "¿Qué comiste? ¡Cuéntale a Bite!",
+                water_drank: "Bebido: {c} / 8 vasos ({l} L)", placeholder: "¿Qué comiste?",
                 btn_photo: "Tomar foto (toca 📎)", btn_gallery: "Elegir de la Galería",
                 history: "Mi Historial", empty_history: "Está vacío. ¡Aliméntame! 🦝",
                 calendar: "Mi Calendario", details: "Detalles de comida", nothing_logged: "Bite está triste, no hay comida...", today: "(Hoy)", no_data: "Sin datos para este día",
@@ -471,7 +475,7 @@
             zh: {
                 sync: "翻页中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
                 protein: "蛋白质", fats: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
-                water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？告诉 Bite！",
+                water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？",
                 btn_photo: "拍照 (点击 📎)", btn_gallery: "从相册选择",
                 history: "我的历史记录", empty_history: "这里空空的。喂我吧！🦝",
                 calendar: "我的日历", details: "食物详情", nothing_logged: "Bite 很伤心，没有记录食物...", today: "(今天)", no_data: "这一天没有数据",
@@ -711,7 +715,7 @@
         // 🔥 ФУНКЦИЯ ПОКУПКИ ЧЕРЕЗ ТЕЛЕГРАМ
         async function buyPremium() {
             const btn = document.getElementById('btn-buy-prem');
-            btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i>'; btn.disabled = true;
+            btn.innerHTML = '<span class="mini-search-icon">🔎</span>'; btn.disabled = true;
             try {
                 // Передаем текущий язык и сбрасываем кэш!
                 const res = await fetch(API_BASE_URL + '/get_invoice?lang=' + currLang + '&_t=' + Date.now(), { headers: { 'Authorization': tg.initData || '' } });
@@ -733,7 +737,8 @@
         }
 
         window.onload = async function() {
-            showLoader(t('sync'), 'read');
+            // 🔥 Оборачиваем текст в data-i18n, чтобы он автоматически перевелся при получении языка
+            showLoader('<span data-i18n="sync">Syncing...</span>', 'read');
             
             // 🔥 Запрашиваем статус (добавили ?_t= для защиты от кэширования)
             try {
@@ -1329,7 +1334,7 @@
 
             const btn = document.getElementById('refine-btn');
             const origHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 24px;"></i>';
+            btn.innerHTML = '<span class="mini-search-icon" style="font-size: 24px;">🔎</span>';
             btn.disabled = true;
 
             const foodData = { name: aiName, cal: aiCal, p: aiP, f: aiF, c: aiC };
