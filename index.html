@@ -104,7 +104,35 @@
         .nav-icon { font-size: 26px; margin-bottom: 4px; transition: 0.3s; }
         .nav-item.active .nav-icon { transform: translateY(-3px); filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
         
-        .loader-text { text-align: center; font-size: 18px; margin-top: 40vh; font-weight: 600; color: var(--text-dark); }
+        /* --- ЛОАДЕРЫ С ЕНОТОМ --- */
+        .loader-content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .loader-text { text-align: center; font-size: 18px; font-weight: 600; color: var(--text-dark); margin-top: 10px; }
+        
+        .raccoon-container, .raccoon-read-container { position: relative; width: 220px; height: 220px; margin-bottom: 15px; }
+        .part { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+
+        /* Анимация: Лупа (Поиск) */
+        .pupils { animation: sync-eyes 3s infinite ease-in-out; }
+        .arm { transform-origin: 58% 68%; animation: sync-arm 3s infinite ease-in-out; z-index: 10; }
+        @keyframes sync-eyes { 0%, 100% { transform: translateX(0) translateY(0); } 50% { transform: translateX(-6px) translateY(2px); } }
+        @keyframes sync-arm { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(25deg); } }
+
+        /* Анимация: Книга (Чтение/Синхронизация) */
+        .body1 { z-index: 1; }
+        .pupils1 { z-index: 2; animation: read-eyes 5s infinite ease-in-out; }
+        .lampa { z-index: 3; animation: idea-lamp 5s infinite ease-in-out; }
+        @keyframes read-eyes {
+            0%, 5% { transform: translateX(0) translateY(0); }
+            15%, 35% { transform: translateX(-4px) translateY(0); }
+            45%, 60% { transform: translateX(4px) translateY(0); }
+            65%, 85% { transform: translateX(0) translateY(-4px); }
+            95%, 100% { transform: translateX(0) translateY(0); }
+        }
+        @keyframes idea-lamp {
+            0%, 60% { opacity: 0; transform: scale(0.95); }
+            65%, 85% { opacity: 1; transform: scale(1); }
+            90%, 100% { opacity: 0; transform: scale(0.95); }
+        }
 
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
@@ -135,7 +163,24 @@
 </head>
 <body>
 
-    <div id="loading-screen"><div class="loader-text" id="loader-message"><i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i><span data-i18n="sync">Syncing...</span></div></div>
+    <div id="loading-screen" class="screen active-screen">
+        <div class="loader-content">
+            <div id="anim-read" class="raccoon-read-container" style="display: none;">
+                <img src="body1.png" class="part body1" alt="body1">
+                <img src="pupils1.png" class="part pupils1" alt="pupils1">
+                <img src="lampa.png" class="part lampa" alt="lampa">
+            </div>
+            <div id="anim-search" class="raccoon-container" style="display: none;">
+                <img src="body.png" class="part" alt="body">
+                <img src="arm.png" class="part arm" alt="arm">
+                <div class="part head-wrapper">
+                    <img src="head.png" class="part" alt="head">
+                    <img src="pupils.png" class="part pupils" alt="pupils">
+                </div>
+            </div>
+            <div class="loader-text" id="loader-message"></div>
+        </div>
+    </div>
 
     <div id="greeting-modal" class="modal-overlay">
         <div class="modal-card">
@@ -343,12 +388,12 @@
         
         const i18n = {
             en: {
-                sync: "Syncing...", consumed: "CONSUMED", over: "OVER LIMIT", out_of: "of", kcal: "kcal",
+                sync: "Flipping pages...", consumed: "CONSUMED", over: "OVER LIMIT", out_of: "of", kcal: "kcal",
                 protein: "Protein", fats: "Fats", carbs: "Carbs", water_title: "Water (250 ml)",
-                water_drank: "Drank: {c} / 8 glasses ({l} L)", placeholder: "What did you eat?",
+                water_drank: "Drank: {c} / 8 glasses ({l} L)", placeholder: "What did you eat? Tell Bite!",
                 btn_photo: "Snap a photo (tap 📎)", btn_gallery: "Pick from Gallery",
-                history: "My History", empty_history: "Nothing eaten yet",
-                calendar: "My Calendar", details: "Food Details", nothing_logged: "Nothing logged", today: "(Today)", no_data: "No data for this day",
+                history: "My History", empty_history: "It's empty here. Feed me! 🦝",
+                calendar: "My Calendar", details: "Food Details", nothing_logged: "Bite is sad, nothing logged...", today: "(Today)", no_data: "No data for this day",
                 profile: "My Profile", lbl_lang: "Language", lbl_gender: "Gender", gen_m: "Male", gen_f: "Female",
                 lbl_age: "Age (years)", lbl_height: "Height (cm)", lbl_weight: "Weight (kg)",
                 lbl_activity: "Activity Level", act_1: "Minimal", act_2: "Light", act_3: "Moderate", act_4: "High",
@@ -356,7 +401,7 @@
                 btn_save_prof: "Save Settings", saved_ok: "Successfully updated!", saving: "Saving...",
                 ai_analysis: "Neuro-Analysis", allergens: "Allergens:", btn_save_food: "Save to Diary", btn_cancel: "Cancel",
                 nav_home: "Home", nav_history: "History", nav_calendar: "Calendar", nav_profile: "Profile",
-                load_prep: "Preparing photo...", load_ai: "Analyzing photo...", load_calc: "Calculating...", error_ai: "Oops, couldn't connect to AI. Try again!",
+                load_prep: "Preparing my magnifying glass...", load_ai: "Studying the photo carefully...", load_calc: "Counting on my paws...", error_ai: "Oops, my raccoon eyes failed. Try again!",
                 months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 btn_refine: "Refine portion", refine_placeholder: "e.g., I ate half...",
@@ -367,15 +412,15 @@
                 days_left: "{d} days left", 
                 btn_renew: "Renew Premium", 
                 btn_buy_profile: "Get Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Unlimited photo analysis<br>✔️ Unlimited text input<br>✔️ Access to portion refine<br><br><i>Unlock the full potential for just 75 ⭐ for 30 days!</i>", btn_buy: "Buy for 75 ⭐️", btn_later: "Later", badge_free: "👤 Basic Plan", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Unlimited photo analysis<br>✔️ Unlimited text input<br>✔️ Access to portion refine<br><br><i>Unlock the full potential for just 75 ⭐ for 30 days!</i>", btn_buy: "Buy for 75 ⭐️", btn_later: "Later", badge_free: "🐾 Basic Plan", badge_prem: "👑 Premium Raccoon"
             },
             ru: {
-                sync: "Синхронизация...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
+                sync: "Шуршу страницами...", consumed: "СЪЕДЕНО", over: "ПЕРЕБОР", out_of: "из", kcal: "ккал",
                 protein: "Белки", fats: "Жиры", carbs: "Углеводы", water_title: "Вода (250 мл)",
-                water_drank: "Выпито: {c} / 8 стаканов ({l} л)", placeholder: "Напиши, что съел...",
+                water_drank: "Выпито: {c} / 8 стаканов ({l} л)", placeholder: "Что ты съел? Расскажи Байту!",
                 btn_photo: "Сфотографировать (жми 📎)", btn_gallery: "Выбрать из Галереи",
-                history: "Моя История", empty_history: "Пока ничего не съедено",
-                calendar: "Мой Календарь", details: "Детали питания", nothing_logged: "Ничего не записано", today: "(Сегодня)", no_data: "Нет данных за этот день",
+                history: "Моя История", empty_history: "Тут пока пусто. Покорми меня! 🦝",
+                calendar: "Мой Календарь", details: "Детали питания", nothing_logged: "Байт грустит, еды не было...", today: "(Сегодня)", no_data: "Нет данных за этот день",
                 profile: "Мой Профиль", lbl_lang: "Язык", lbl_gender: "Пол", gen_m: "Мужской", gen_f: "Женский",
                 lbl_age: "Возраст (лет)", lbl_height: "Рост (см)", lbl_weight: "Вес (кг)",
                 lbl_activity: "Активность", act_1: "Минимальная", act_2: "Слабая", act_3: "Средняя", act_4: "Высокая",
@@ -383,7 +428,7 @@
                 btn_save_prof: "Сохранить параметры", saved_ok: "Успешно обновлено!", saving: "Сохраняем...",
                 ai_analysis: "Нейро-Анализ", allergens: "Аллергены:", btn_save_food: "Записать в дневник", btn_cancel: "Отменить",
                 nav_home: "Главная", nav_history: "История", nav_calendar: "Календарь", nav_profile: "Профиль",
-                load_prep: "Подготавливаю фото...", load_ai: "Изучаю фото...", load_calc: "Считаю граммы...", error_ai: "Ой, не удалось подключиться к ИИ. Попробуй еще раз!",
+                load_prep: "Протираю лупу...", load_ai: "Тщательно изучаю фото...", load_calc: "Считаю на лапках...", error_ai: "Ой, мои енотьи глаза подвели. Попробуй еще раз!",
                 months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
                 days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
                 btn_refine: "Уточнить порцию", refine_placeholder: "Например: съел половину...",
@@ -394,15 +439,15 @@
                 days_left: "Осталось {d} дн.", 
                 btn_renew: "Продлить Premium", 
                 btn_buy_profile: "Купить Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Безлимитное распознавание фото<br>✔️ Безлимитный текстовый ввод<br>✔️ Доступ к 'Уточнению порций'<br><br><i>Разблокируй полный потенциал всего за 75 ⭐ на 30 дней!</i>", btn_buy: "Купить за 75 ⭐️", btn_later: "Позже", badge_free: "👤 Базовый план", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Безлимитное распознавание фото<br>✔️ Безлимитный текстовый ввод<br>✔️ Доступ к 'Уточнению порций'<br><br><i>Разблокируй полный потенциал всего за 75 ⭐ на 30 дней!</i>", btn_buy: "Купить за 75 ⭐️", btn_later: "Позже", badge_free: "🐾 Базовый план", badge_prem: "👑 Premium Енот"
             },
             es: {
-                sync: "Sincronizando...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
+                sync: "Pasando páginas...", consumed: "CONSUMIDO", over: "EXCESO", out_of: "de", kcal: "kcal",
                 protein: "Proteína", fats: "Grasas", carbs: "Carbs", water_title: "Agua (250 ml)",
-                water_drank: "Bebido: {c} / 8 vasos ({l} L)", placeholder: "¿Qué comiste?",
+                water_drank: "Bebido: {c} / 8 vasos ({l} L)", placeholder: "¿Qué comiste? ¡Cuéntale a Bite!",
                 btn_photo: "Tomar foto (toca 📎)", btn_gallery: "Elegir de la Galería",
-                history: "Mi Historial", empty_history: "Aún no has comido nada",
-                calendar: "Mi Calendario", details: "Detalles de comida", nothing_logged: "Nada registrado", today: "(Hoy)", no_data: "Sin datos para este día",
+                history: "Mi Historial", empty_history: "Está vacío. ¡Aliméntame! 🦝",
+                calendar: "Mi Calendario", details: "Detalles de comida", nothing_logged: "Bite está triste, no hay comida...", today: "(Hoy)", no_data: "Sin datos para este día",
                 profile: "Mi Perfil", lbl_lang: "Idioma", lbl_gender: "Género", gen_m: "Masculino", gen_f: "Femenino",
                 lbl_age: "Edad (años)", lbl_height: "Altura (cm)", lbl_weight: "Peso (kg)",
                 lbl_activity: "Actividad", act_1: "Mínima", act_2: "Ligera", act_3: "Moderada", act_4: "Alta",
@@ -410,7 +455,7 @@
                 btn_save_prof: "Guardar Ajustes", saved_ok: "¡Actualizado con éxito!", saving: "Guardando...",
                 ai_analysis: "Neuro-Análisis", allergens: "Alérgenos:", btn_save_food: "Guardar en el Diario", btn_cancel: "Cancelar",
                 nav_home: "Inicio", nav_history: "Historial", nav_calendar: "Calendario", nav_profile: "Perfil",
-                load_prep: "Preparando foto...", load_ai: "Analizando foto...", load_calc: "Calculando...", error_ai: "¡Ups, no se pudo conectar a la IA. ¡Inténtalo de nuevo!",
+                load_prep: "Preparando mi lupa...", load_ai: "Estudiando la foto...", load_calc: "Contando con mis patas...", error_ai: "¡Ups, mis ojos de mapache fallaron. ¡Inténtalo de nuevo!",
                 months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                 days: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'],
                 btn_refine: "Refinar porción", refine_placeholder: "Ej: comí la mitad...",
@@ -421,15 +466,15 @@
                 days_left: "{d} días rest.", 
                 btn_renew: "Renovar Premium", 
                 btn_buy_profile: "Obtener Premium",
-                prem_title: "Smart Premium", prem_desc: "✔️ Análisis de fotos ilimitado<br>✔️ Entrada de texto ilimitada<br>✔️ Acceso a refinar porciones<br><br><i>¡Desbloquea todo el potencial por solo 75 ⭐ por 30 días!</i>", btn_buy: "Comprar por 75 ⭐️", btn_later: "Más tarde", badge_free: "👤 Plan Básico", badge_prem: "👑 Premium"
+                prem_title: "Smart Premium", prem_desc: "✔️ Análisis de fotos ilimitado<br>✔️ Entrada de texto ilimitada<br>✔️ Acceso a refinar porciones<br><br><i>¡Desbloquea todo el potencial por solo 75 ⭐ por 30 días!</i>", btn_buy: "Comprar por 75 ⭐️", btn_later: "Más tarde", badge_free: "🐾 Plan Básico", badge_prem: "👑 Mapache Premium"
             },
             zh: {
-                sync: "同步中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
+                sync: "翻页中...", consumed: "已摄入", over: "超标", out_of: "/", kcal: "千卡",
                 protein: "蛋白质", fats: "脂肪", carbs: "碳水", water_title: "水 (250 毫升)",
-                water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？",
+                water_drank: "已喝: {c} / 8 杯 ({l} 升)", placeholder: "你吃了什么？告诉 Bite！",
                 btn_photo: "拍照 (点击 📎)", btn_gallery: "从相册选择",
-                history: "我的历史记录", empty_history: "还没吃任何东西",
-                calendar: "我的日历", details: "食物详情", nothing_logged: "没有记录", today: "(今天)", no_data: "这一天没有数据",
+                history: "我的历史记录", empty_history: "这里空空的。喂我吧！🦝",
+                calendar: "我的日历", details: "食物详情", nothing_logged: "Bite 很伤心，没有记录食物...", today: "(今天)", no_data: "这一天没有数据",
                 profile: "我的资料", lbl_lang: "语言", lbl_gender: "性别", gen_m: "男", gen_f: "女",
                 lbl_age: "年龄 (岁)", lbl_height: "身高 (厘米)", lbl_weight: "体重 (公斤)",
                 lbl_activity: "活动水平", act_1: "极少", act_2: "轻度", act_3: "中度", act_4: "高度",
@@ -437,7 +482,7 @@
                 btn_save_prof: "保存设置", saved_ok: "更新成功！", saving: "保存中...",
                 ai_analysis: "神经分析", allergens: "过敏原:", btn_save_food: "保存到日记", btn_cancel: "取消",
                 nav_home: "首页", nav_history: "历史", nav_calendar: "日历", nav_profile: "资料",
-                load_prep: "准备照片...", load_ai: "分析照片中...", load_calc: "计算中...", error_ai: "糟糕，无法连接到 AI。请重试！",
+                load_prep: "准备我的放大镜...", load_ai: "仔细研究照片中...", load_calc: "用爪子计算中...", error_ai: "糟糕，我的浣熊眼睛看花眼了。请重试！",
                 months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
                 days: ['一', '二', '三', '四', '五', '六', '日'],
                 btn_refine: "修改份量", refine_placeholder: "例如：我吃了一半...",
@@ -448,7 +493,7 @@
                 days_left: "剩余 {d} 天", 
                 btn_renew: "续订高级版", 
                 btn_buy_profile: "获取高级版",
-                prem_title: "智能高级版", prem_desc: "✔️ 无限照片分析<br>✔️ 无限文本输入<br>✔️ 修改份量功能<br><br><i>仅需 75 ⭐ 即可解锁 30 天全部功能！</i>", btn_buy: "花费 75 ⭐️ 购买", btn_later: "以后", badge_free: "👤 基础计划", badge_prem: "👑 高级版"
+                prem_title: "智能高级版", prem_desc: "✔️ 无限照片分析<br>✔️ 无限文本输入<br>✔️ 修改份量功能<br><br><i>仅需 75 ⭐ 即可解锁 30 天全部功能！</i>", btn_buy: "花费 75 ⭐️ 购买", btn_later: "以后", badge_free: "🐾 基础计划", badge_prem: "👑 高级浣熊"
             }
         };
 
@@ -688,7 +733,7 @@
         }
 
         window.onload = async function() {
-            document.getElementById('loading-screen').style.display = 'block';
+            showLoader(t('sync'), 'read');
             
             // 🔥 Запрашиваем статус (добавили ?_t= для защиты от кэширования)
             try {
@@ -1161,7 +1206,7 @@
                 return;
             }
             
-            showLoader(t('load_prep')); 
+            showLoader(t('load_prep'), 'search');
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1175,7 +1220,7 @@
                     const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
                     canvas.toBlob(async (blob) => {
                         const formData = new FormData(); formData.append('image', blob, 'image.jpg'); 
-                        showLoader(t('load_ai'));
+                        showLoader(t('load_ai'), 'search');
                         await sendToNgrok('/upload', formData, false);
                     }, 'image/jpeg', 0.8);
                 };
@@ -1195,7 +1240,7 @@
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
                 return;
             }
-            showLoader(t('load_calc')); await sendToNgrok('/text', JSON.stringify({ text: textInput, lang: currLang }), true);
+            showLoader(t('load_calc'), 'read'); await sendToNgrok('/text', JSON.stringify({ text: textInput, lang: currLang }), true);
             document.getElementById('text-food-input').value = '';
         }
 
@@ -1231,10 +1276,16 @@
             }
         }
 
-        function showLoader(msg) {
+        function showLoader(msg, type = 'read') {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.getElementById('bottom-nav').style.display = 'none';
-            document.getElementById('loader-message').innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin" style="font-size: 40px; display:block; margin-bottom: 15px; color: var(--macro-protein);"></i><span>${msg}</span>`;
+            
+            // Включаем нужную анимацию
+            document.getElementById('anim-read').style.display = type === 'read' ? 'block' : 'none';
+            document.getElementById('anim-search').style.display = type === 'search' ? 'block' : 'none';
+            
+            document.getElementById('loader-message').innerHTML = `<span>${msg}</span>`;
+            document.getElementById('loading-screen').classList.add('active-screen');
             document.getElementById('loading-screen').style.display = 'block';
         }
 
