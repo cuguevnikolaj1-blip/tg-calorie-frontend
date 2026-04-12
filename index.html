@@ -11,10 +11,12 @@
 
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #8EC5FC 0%, #E0C3FC 100%);
-            --card-glass: rgba(255, 255, 255, 0.85); --card-border: rgba(255, 255, 255, 0.5);
+            /* Фирменный фон Байта */
+            --bg-gradient: linear-gradient(135deg, #A4D4EC 0%, #E8F4FA 100%);
+            --card-glass: rgba(255, 255, 255, 0.9); --card-border: rgba(255, 255, 255, 0.6);
             --text-dark: #2C2C2E; --text-gray: #8E8E93;
-            --macro-cal: #007AFF; --macro-protein: #8A2BE2; --macro-fat: #FF4500; --macro-carbs: #32CD32;   
+            --macro-cal: #007AFF; --macro-protein: #8A2BE2; --macro-fat: #FF9500; 
+            --macro-carbs: #34C759;   
             --water-blue: #007AFF; --accent-red: #FF3B30; --radius: 28px;
         }
 
@@ -29,13 +31,18 @@
         button { border: none; padding: 16px; border-radius: 18px; width: 100%; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Poppins', sans-serif; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.97); }
         button:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-primary { background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); color: #fff; box-shadow: 0 6px 15px rgba(142, 55, 215, 0.3); }
+        
+        /* Кнопки в цвет енота */
+        .btn-primary { background: #4A5568; color: #fff; box-shadow: 0 6px 15px rgba(74, 85, 104, 0.3); }
         .btn-secondary { background: rgba(255,255,255,0.7); color: var(--text-dark); border: 1px solid rgba(0,0,0,0.05); }
 
         .screen { display: none; animation: fadeIn 0.4s ease; }
         .active-screen { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        #loading-screen, #sandbox-screen { display: none; }
+        
+        #sandbox-screen { display: none; }
+        /* Фиксированный лоадер без скролла */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); z-index: 9999; display: flex; align-items: center; justify-content: center; }
 
         .cal-donut-wrap { position: relative; width: 180px; height: 180px; margin: 0 auto 25px auto; }
         .cal-donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 6px 12px rgba(0,122,255,0.25)); }
@@ -105,19 +112,17 @@
         .nav-item.active .nav-icon { transform: translateY(-3px); filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
         
         /* --- ЛОАДЕРЫ С ЕНОТОМ --- */
-        .loader-content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .loader-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .loader-text { text-align: center; font-size: 18px; font-weight: 600; color: var(--text-dark); margin-top: 10px; }
         
         .raccoon-container, .raccoon-read-container { position: relative; width: 220px; height: 220px; margin-bottom: 15px; }
         .part { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
-        /* Анимация: Лупа (Поиск) - ЗАМЕДЛЕНО И УМЕНЬШЕНО */
         .pupils { animation: sync-eyes 4s infinite ease-in-out; }
         .arm { transform-origin: 58% 68%; animation: sync-arm 4s infinite ease-in-out; z-index: 10; }
         @keyframes sync-eyes { 0%, 100% { transform: translateX(0) translateY(0); } 50% { transform: translateX(-3px) translateY(2px); } }
         @keyframes sync-arm { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } }
 
-        /* Анимация: Книга (Чтение/Синхронизация) - УМЕНЬШЕН РАЗМАХ ГЛАЗ */
         .body1 { z-index: 1; }
         .pupils1 { z-index: 2; animation: read-eyes 5s infinite ease-in-out; }
         .lampa { z-index: 3; animation: idea-lamp 5s infinite ease-in-out; }
@@ -141,7 +146,7 @@
         .lang-slider-wrapper { margin-bottom: 20px; }
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         .lang-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .lang-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
+        .lang-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); background: #4A5568; border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(74, 85, 104, 0.3); }
         .lang-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 24px; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; }
         .lang-btn:active { transform: scale(0.9); }
         .lang-toggle[data-active="en"] .lang-toggle-thumb { transform: translateX(0%); }
@@ -150,7 +155,7 @@
         .lang-toggle[data-active="zh"] .lang-toggle-thumb { transform: translateX(300%); }
 
         .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(142, 55, 215, 0.3); }
+        .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: #4A5568; border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(74, 85, 104, 0.3); }
         .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
         .notify-toggle[data-active="1"] .notify-toggle-thumb { transform: translateX(100%); }
         .notify-toggle[data-active="0"] .notify-toggle-thumb { transform: translateX(0%); }
@@ -386,7 +391,6 @@
         tg.expand(); 
         
         // 🔥 TODO: Замените на домен за Cloudflare/nginx прокси, чтобы скрыть реальный IP сервера
-        // Пример: const API_BASE_URL = 'https://api.smartfoodtracker.com';
         const API_BASE_URL = 'https://64.188.61.46.nip.io';
         let editingItemId = null;
         
@@ -502,6 +506,10 @@
         };
 
         let currLang = 'en';
+        // Сразу подхватываем язык из Telegram ДО загрузки интерфейса!
+        if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) {
+            currLang = tg.initDataUnsafe.user.language_code;
+        }
 
         function t(key) { return i18n[currLang][key] || i18n['en'][key] || key; }
 
@@ -517,7 +525,6 @@
             document.getElementById('text-food-input').placeholder = t('placeholder');
             document.getElementById('langToggle').setAttribute('data-active', currLang);
 
-            // 🔥 ОБНОВЛЯЕМ ПРОФИЛЬ ТОЛЬКО ПОСЛЕ ТОГО, КАК ЯЗЫК УСТАНОВЛЕН
             const badge = document.getElementById('profile-status-badge');
             const premBtn = document.getElementById('profile-premium-btn');
             const premBtnText = document.getElementById('profile-premium-btn-text');
@@ -558,7 +565,7 @@
             if (userId) {
                 try {
                     await fetch(`${API_BASE_URL}/set_lang`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' }, body: JSON.stringify({ userId: userId, lang: langCode }) });
-                } catch (err) { console.log("Не удалось синхронизировать язык", err); }
+                } catch (err) {}
             }
         }
 
@@ -590,14 +597,8 @@
             aiC = parseInt(urlParams.get('c')) || 0; aiAl = urlParams.get('al') || '-'; aiEmoji = urlParams.get('em') || '🍽';
         }
 
-        // 🔥 АДАПТЕР КЛЮЧЕЙ (УМНЫЙ)
-        function sanitizeKey(k) { 
-            return k.replace(/\./g, '_'); 
-        }
-        function desanitizeKey(k) { 
-            // Возвращаем точки ТОЛЬКО там, где есть дата (две цифры _ две цифры _ четыре цифры)
-            return k.replace(/(\d{2})_(\d{2})_(\d{4})/g, '$1.$2.$3'); 
-        }
+        function sanitizeKey(k) { return k.replace(/\./g, '_'); }
+        function desanitizeKey(k) { return k.replace(/(\d{2})_(\d{2})_(\d{4})/g, '$1.$2.$3'); }
 
         const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -608,45 +609,34 @@
                 try { 
                     tg.CloudStorage.getKeys((err, keys) => { 
                         if(!handled) { 
-                            handled=true; 
-                            clearTimeout(t); 
+                            handled=true; clearTimeout(t); 
                             if(err) reject(new Error(err)); 
-                            else {
-                                const restoredKeys = (keys || []).map(desanitizeKey);
-                                resolve(restoredKeys); 
-                            }
+                            else { resolve((keys || []).map(desanitizeKey)); }
                         } 
                     }); 
-                } 
-                catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } } 
+                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } } 
             });
         }
 
         function getCloudItems(keysArray) {
             return new Promise((resolve, reject) => {
                 if (!keysArray || keysArray.length === 0) return resolve({});
-                const safeKeys = keysArray.map(sanitizeKey); // Прячем точки перед отправкой
+                const safeKeys = keysArray.map(sanitizeKey);
                 let handled = false;
                 const t = setTimeout(() => { if(!handled) { handled=true; reject(new Error("Таймаут данных")); } }, 4500); 
                 try { 
                     tg.CloudStorage.getItems(safeKeys, (err, vals) => { 
                         if(!handled) { 
-                            handled=true; 
-                            clearTimeout(t); 
+                            handled=true; clearTimeout(t); 
                             if(err) reject(new Error(err)); 
                             else {
                                 let restoredVals = {};
-                                if (vals) {
-                                    for (let k in vals) {
-                                        restoredVals[desanitizeKey(k)] = vals[k]; // Возвращаем точки обратно
-                                    }
-                                }
+                                if (vals) { for (let k in vals) { restoredVals[desanitizeKey(k)] = vals[k]; } }
                                 resolve(restoredVals); 
                             }
                         } 
                     }); 
-                } 
-                catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } }
+                } catch(e) { if(!handled) { handled=true; clearTimeout(t); reject(e); } }
             });
         }
 
@@ -656,10 +646,7 @@
                 try {
                     if(action === 'keys') return await getCloudKeys();
                     if(action === 'items') return await getCloudItems(keys);
-                } catch(e) {
-                    lastError = e;
-                    await delay(800);
-                }
+                } catch(e) { lastError = e; await delay(800); }
             }
             throw lastError;
         }
@@ -676,15 +663,11 @@
 
         async function saveToCloud(key, value) {
             await delay(200); 
-            const safeKey = sanitizeKey(key); // Прячем точки перед отправкой
+            const safeKey = sanitizeKey(key);
             return new Promise((resolve) => {
                 let handled = false;
                 const t = setTimeout(() => { if(!handled) { handled=true; resolve(false); } }, 6000); 
-                try { 
-                    tg.CloudStorage.setItem(safeKey, value, (err, ok) => { 
-                        if(!handled) { handled=true; clearTimeout(t); resolve(!err); }
-                    }); 
-                }
+                try { tg.CloudStorage.setItem(safeKey, value, (err, ok) => { if(!handled) { handled=true; clearTimeout(t); resolve(!err); } }); }
                 catch(e) { if(!handled) { handled=true; clearTimeout(t); resolve(false); } }
             });
         }
@@ -700,24 +683,20 @@
         async function syncSettingsWithServer(notifyVal) {
             if (tg.initDataUnsafe?.user?.id) {
                 const tzOffset = -new Date().getTimezoneOffset(); 
-                try {
-                    await fetch(API_BASE_URL + '/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' }, body: JSON.stringify({ notify: notifyVal, tz: tzOffset }) });
-                } catch(e) {}
+                try { await fetch(API_BASE_URL + '/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': tg.initData || '' }, body: JSON.stringify({ notify: notifyVal, tz: tzOffset }) }); } catch(e) {}
             }
         }
 
-        window.userStatus = 'free'; // По умолчанию
+        window.userStatus = 'free'; 
         window.daysLeft = 0;
 
         function showPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; }
         function closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; }
 
-        // 🔥 ФУНКЦИЯ ПОКУПКИ ЧЕРЕЗ ТЕЛЕГРАМ
         async function buyPremium() {
             const btn = document.getElementById('btn-buy-prem');
             btn.innerHTML = '<span class="mini-search-icon">🔎</span>'; btn.disabled = true;
             try {
-                // Передаем текущий язык и сбрасываем кэш!
                 const res = await fetch(API_BASE_URL + '/get_invoice?lang=' + currLang + '&_t=' + Date.now(), { headers: { 'Authorization': tg.initData || '' } });
                 const data = await res.json();
                 if (data.url) {
@@ -725,9 +704,7 @@
                         if (status === 'paid') {
                             tg.showAlert("🎉 Оплата прошла успешно! Вы теперь Premium пользователь. Приложение будет перезагружено.");
                             setTimeout(() => window.location.reload(), 2000);
-                        } else {
-                            btn.innerHTML = `<span data-i18n="btn_buy">${t('btn_buy')}</span>`; btn.disabled = false;
-                        }
+                        } else { btn.innerHTML = `<span data-i18n="btn_buy">${t('btn_buy')}</span>`; btn.disabled = false; }
                     });
                 } else { throw new Error('Нет ссылки'); }
             } catch(e) {
@@ -737,10 +714,9 @@
         }
 
         window.onload = async function() {
-            // 🔥 Оборачиваем текст в data-i18n, чтобы он автоматически перевелся при получении языка
-            showLoader('<span data-i18n="sync">Syncing...</span>', 'read');
+            // 🔥 Показываем лоадер уже С УЧЕТОМ ЯЗЫКА ИЗ TELEGRAM!
+            showLoader(t('sync'), 'read');
             
-            // 🔥 Запрашиваем статус (добавили ?_t= для защиты от кэширования)
             try {
                 const meRes = await fetch(API_BASE_URL + '/me?_t=' + Date.now(), { headers: { 'Authorization': tg.initData || '' } });
                 if(meRes.ok) {
@@ -792,7 +768,6 @@
             let savedLang = cloudData['userLang'];
             if (urlLang && i18n[urlLang] && urlLang !== savedLang) { currLang = urlLang; saveToCloud('userLang', currLang); } 
             else if (savedLang) { currLang = savedLang; } 
-            else if (tg.initDataUnsafe?.user?.language_code && i18n[tg.initDataUnsafe.user.language_code]) { currLang = tg.initDataUnsafe.user.language_code; }
             applyTranslations(); 
 
             let notifyPref = cloudData['notifyPref'] || '1';
@@ -802,7 +777,13 @@
 
             const user = tg.initDataUnsafe?.user;
             if (user) {
-                if (user.photo_url) { document.getElementById('profile-avatar').src = user.photo_url; document.getElementById('profile-avatar').style.display = 'block'; }
+                if (user.photo_url) { 
+                    document.getElementById('profile-avatar').src = user.photo_url; 
+                } else {
+                    document.getElementById('profile-avatar').src = 'head.png'; 
+                }
+                document.getElementById('profile-avatar').style.display = 'block';
+                document.getElementById('profile-avatar').style.background = '#A4D4EC';
                 document.getElementById('profile-name').innerText = user.first_name || t('profile');
             }
 
@@ -837,7 +818,6 @@
             let showGreeting = false;
             let greetingType = '';
 
-            // 🔥 ЛИНЕЙНАЯ СМЕНА ДНЯ (Никогда не блокируется)
             if (lastDateStr && lastDateStr !== today && userMacrosStr && userMacrosStr !== 'undefined') {
                 let pastConsumed = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
                 let pastTarget = JSON.parse(userMacrosStr);
@@ -846,7 +826,6 @@
                 let dayRecord = { consumed: pastConsumed, target: pastTarget, items: pastItems };
                 let dayMeta = { consumed: pastConsumed, target: pastTarget };
                 
-                // 1. Сразу обновляем дату
                 await saveToCloud('lastDate', today);
                 
                 if (!window.loggedDates.includes(lastDateStr)) {
@@ -854,20 +833,17 @@
                     await saveToCloud('logged_dates', JSON.stringify(window.loggedDates));
                 }
 
-                // 2. Сохраняем историю
                 await saveToCloud('hist_' + lastDateStr, JSON.stringify(dayMeta));
                 await saveToCloud('hist_items_' + lastDateStr, JSON.stringify(pastItems));
 
                 window.historyLog[lastDateStr] = dayRecord;
 
-                // 3. Проверка стриков
                 if (pastConsumed.cal > 0) {
                     let pct = pastConsumed.cal / pastTarget.cal;
                     if (pct >= 0.9 && pct <= 1.1) { greetingType = 'success'; } else { greetingType = 'fail'; }
                 } else { greetingType = 'fail'; }
                 showGreeting = true;
                 
-                // 4. Обнуляем сегодняшний день
                 consumedTodayStr = JSON.stringify({ cal: 0, protein: 0, fat: 0, carbs: 0 }); 
                 consumedItemsStr = JSON.stringify([]);
                 await saveToCloud('consumedToday', consumedTodayStr); 
@@ -1195,7 +1171,6 @@
             const file = event.target.files[0]; 
             if (!file) return;
             
-            // 🔥 Проверка размера на клиенте (5 MB)
             if (file.size > 5 * 1024 * 1024) {
                 const msg = currLang === 'ru' ? 'Файл слишком большой (макс 5 MB)' : 'File too large (max 5 MB)';
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
@@ -1203,7 +1178,6 @@
                 return;
             }
             
-            // 🔥 Проверка типа файла
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
                 const msg = currLang === 'ru' ? 'Поддерживаются только фото (JPEG, PNG, WebP)' : 'Only photos supported (JPEG, PNG, WebP)';
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
@@ -1239,7 +1213,6 @@
 
         async function sendTextToAI() {
             const textInput = document.getElementById('text-food-input').value.trim(); if(!textInput) return;
-            // 🔥 Проверка длины на клиенте
             if (textInput.length > 500) {
                 const msg = currLang === 'ru' ? 'Текст слишком длинный (макс 500 символов)' : 'Text too long (max 500 characters)';
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
@@ -1257,7 +1230,6 @@
                 
                 const response = await fetch(API_BASE_URL + finalEndpoint, options);
                 
-                // 🔥 ПРОВЕРЯЕМ ЛИМИТЫ FREEMIUM
                 if (response.status === 403) {
                     const errData = await response.json();
                     if (errData.limit_reached) {
@@ -1275,7 +1247,7 @@
                 renderSandbox();
             } catch (err) { 
                 document.getElementById('loading-screen').style.display = 'none'; 
-                if (err.message === "limit_reached_silent") return; // Глушим ошибку, если показали модалку
+                if (err.message === "limit_reached_silent") return; 
                 const msg = err.message || t('error_ai');
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
             }
@@ -1285,13 +1257,14 @@
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.getElementById('bottom-nav').style.display = 'none';
             
-            // Включаем нужную анимацию
             document.getElementById('anim-read').style.display = type === 'read' ? 'block' : 'none';
             document.getElementById('anim-search').style.display = type === 'search' ? 'block' : 'none';
             
             document.getElementById('loader-message').innerHTML = `<span>${msg}</span>`;
             document.getElementById('loading-screen').classList.add('active-screen');
-            document.getElementById('loading-screen').style.display = 'block';
+            
+            // 🔥 Задаем flex, чтобы лоадер оставался по центру
+            document.getElementById('loading-screen').style.display = 'flex';
         }
 
         function renderSandbox() {
@@ -1301,16 +1274,15 @@
             document.getElementById('sandbox-p').innerText = `P: ${aiP} g`; document.getElementById('sandbox-f').innerText = `F: ${aiF} g`; document.getElementById('sandbox-c').innerText = `C: ${aiC} g`;
             document.getElementById('food-allergens').innerText = aiAl; 
             
-            // 🔥 ВЕШАЕМ ЗАМОЧЕК НА КНОПКУ "УТОЧНИТЬ", ЕСЛИ ЮЗЕР FREE
             const refineBtn = document.getElementById('btn-toggle-refine');
             if (window.userStatus === 'free') {
                 refineBtn.innerHTML = `<i class="ph-bold ph-lock" style="color: #FF9500;"></i> <span data-i18n="btn_refine">${t('btn_refine')}</span>`;
                 refineBtn.style.opacity = '0.7';
-                refineBtn.onclick = showPremiumModal; // При клике покажет модалку
+                refineBtn.onclick = showPremiumModal; 
             } else {
                 refineBtn.innerHTML = `<i class="ph-bold ph-pencil-simple"></i> <span data-i18n="btn_refine">${t('btn_refine')}</span>`;
                 refineBtn.style.opacity = '1';
-                refineBtn.onclick = toggleRefine; // При клике работает как обычно
+                refineBtn.onclick = toggleRefine; 
             }
             
             document.getElementById('sandbox-screen').style.display = 'block';
@@ -1325,7 +1297,6 @@
             const textInput = document.getElementById('refine-input').value.trim();
             if(!textInput) return;
             
-            // 🔥 Проверка длины
             if (textInput.length > 500) {
                 const msg = currLang === 'ru' ? 'Текст слишком длинный (макс 500 символов)' : 'Text too long (max 500 characters)';
                 if (tg && tg.showAlert) { tg.showAlert(msg); } else { alert(msg); }
