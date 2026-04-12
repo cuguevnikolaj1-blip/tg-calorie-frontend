@@ -147,7 +147,10 @@
         .lang-slider-title { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
         .lang-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         .lang-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(25% - 2px); background: linear-gradient(135deg, #FDA341 0%, #FC7F0E 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(252, 127, 14, 0.35); }
+        
+        .lang-btn { position: relative; flex: 1; text-align: center; padding: 10px 0; font-size: 24px; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; }
         .lang-btn:active { transform: scale(0.9); }
+        
         .lang-toggle[data-active="en"] .lang-toggle-thumb { transform: translateX(0%); }
         .lang-toggle[data-active="ru"] .lang-toggle-thumb { transform: translateX(100%); }
         .lang-toggle[data-active="es"] .lang-toggle-thumb { transform: translateX(200%); }
@@ -155,7 +158,9 @@
 
         .notify-toggle { position: relative; display: flex; background: rgba(0,0,0,0.05); border-radius: 16px; padding: 4px; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         .notify-toggle-thumb { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: linear-gradient(135deg, #FDA341 0%, #FC7F0E 100%); border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(252, 127, 14, 0.35); }
-        .notify-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
+        
+        .notify-btn { position: relative; flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; z-index: 2; transition: transform 0.2s; outline: none; color: var(--text-dark); }
+        
         .notify-toggle[data-active="1"] .notify-toggle-thumb { transform: translateX(100%); }
         .notify-toggle[data-active="0"] .notify-toggle-thumb { transform: translateX(0%); }
         .notify-toggle[data-active="1"] .notify-btn[data-val="1"] { color: #fff; }
