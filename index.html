@@ -682,7 +682,11 @@
         window.daysLeft = 0;
 
         function showPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; }
-        function closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; }
+        function closePremiumModal() { 
+    document.getElementById('premium-modal').style.display = 'none'; 
+    document.getElementById('bottom-nav').style.display = 'flex';
+    switchTab('diary-summary');
+}
 
         async function buyPremium() {
             const btn = document.getElementById('btn-buy-prem');
@@ -1017,6 +1021,10 @@
                 const div = document.createElement('div'); div.className = 'history-item';
                 const safeName = escapeHTML(item.name);
                 const safeEmoji = escapeHTML(item.em || '🍽');
+                
+                // Проверяем статус: если free, ставим замок, если premium — карандаш
+                const editIcon = window.userStatus === 'free' ? '<i class="ph-bold ph-lock" style="opacity: 0.6;"></i>' : '<i class="ph-bold ph-pencil-simple"></i>';
+                
                 div.innerHTML = `
                     <div class="history-emoji">${safeEmoji}</div>
                     <div class="history-info">
@@ -1024,7 +1032,7 @@
                         <p>🔥 ${item.cal} ${t('kcal')} <span style="margin-left:5px; color:rgba(40,48,28,0.2);">•</span> P:${item.p} F:${item.f} C:${item.c}</p>
                     </div>
                     <div class="action-btns">
-                        <button class="edit-btn" onclick="editFood(${item.id})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="edit-btn" onclick="editFood(${item.id})">${editIcon}</button>
                         <button class="delete-btn" onclick="deleteFood(${item.id})"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 `;
@@ -1033,6 +1041,12 @@
         }
 
         function editFood(id) {
+            // Если юзер без подписки, показываем баннер и прерываем функцию
+            if (window.userStatus === 'free') {
+                showPremiumModal();
+                return; 
+            }
+            
             const item = window.consumedItems.find(i => i.id === id);
             if (!item) return;
             editingItemId = id; 
