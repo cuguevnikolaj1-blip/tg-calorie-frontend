@@ -728,7 +728,7 @@
 
                 allKeys = await safeCloudFetch('keys', null, 3).catch(e => []);
 
-                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates'];
+                const coreKeys = ['userLang', 'notifyPref', 'userMacros', 'consumedToday', 'consumedItems', 'lastDate', 'water_history', 'logged_dates', 'userProfile'];
                 const coreData = await safeCloudFetch('items', coreKeys, 3);
 
                 let loggedDatesFromIndex = [];
@@ -852,6 +852,20 @@
             window.consumedToday = (consumedTodayStr && consumedTodayStr !== 'undefined') ? JSON.parse(consumedTodayStr) : { cal: 0, protein: 0, fat: 0, carbs: 0 };
             window.consumedItems = (consumedItemsStr && consumedItemsStr !== 'undefined') ? JSON.parse(consumedItemsStr) : [];
 
+            // Восстанавливаем визуальные данные профиля
+            const userProfileStr = cloudData['userProfile'];
+            if (userProfileStr && userProfileStr !== 'undefined') {
+                try {
+                    const profile = JSON.parse(userProfileStr);
+                    if (profile.age) document.getElementById('age').value = profile.age;
+                    if (profile.height) document.getElementById('height').value = profile.height;
+                    if (profile.weight) document.getElementById('weight').value = profile.weight;
+                    if (profile.activity) document.getElementById('activity').value = profile.activity;
+                    if (profile.gender) document.getElementById('gender').value = profile.gender;
+                    if (profile.goal) document.getElementById('goal').value = profile.goal;
+                } catch(e) {}
+            }
+
             document.getElementById('loading-screen').style.display = 'none';
 
             if (window.userMacros) { 
@@ -921,6 +935,10 @@
             
             window.userMacros = { goal: goal, cal: tdee, protein: Math.round((tdee * pPct) / 4), fat: Math.round((tdee * fPct) / 9), carbs: Math.round((tdee * cPct) / 4) };
             await saveToCloud('userMacros', JSON.stringify(window.userMacros));
+            
+            // Сохраняем сырые данные для отображения в профиле
+            const userProfile = { age, height, weight, activity, gender, goal };
+            await saveToCloud('userProfile', JSON.stringify(userProfile));
             
             if(!window.consumedToday) {
                 window.consumedToday = { cal: 0, protein: 0, fat: 0, carbs: 0 }; window.consumedItems = [];
